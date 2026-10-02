@@ -1,0 +1,32 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+
+@theme {
+    --color-sage: #A5BF98;
+    --color-sage-light: #EBF2E8;
+    --color-sage-dark: #869480;
+    --color-sage-hover: #73826D;
+    --color-gray-subtle: #E3E3E1;
+    --color-gray-light: #F7F7F6;
+    --color-accent-red: #E8343B;
+    --color-accent-red-hover: #D1252C;
+    --color-dark-slate: #242E24;
+    --color-dark-muted: #4B5549;
+
+    --font-serif: 'Playfair Display', Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+}
+
+/* Custom visual utilities for SAM identity */
+body {
+    font-family: var(--font-sans);
+    color: var(--color-dark-slate);
+    background-color: #FAFAFA;
+}
+
+h1, h2, h3, .font-heading {
+    font-family: var(--font-serif);
+}
