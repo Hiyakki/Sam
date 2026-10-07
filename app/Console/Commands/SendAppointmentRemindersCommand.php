@@ -2,10 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Contracts\WhatsAppSender;
 use App\Mail\AppointmentReminderPatientMail;
 use App\Models\Appointment;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class SendAppointmentRemindersCommand extends Command
@@ -43,6 +45,19 @@ class SendAppointmentRemindersCommand extends Command
         foreach ($appointments as $appointment) {
             if (filled($appointment->patient_email)) {
                 Mail::to($appointment->patient_email)->queue(new AppointmentReminderPatientMail($appointment));
+            }
+
+            // Kirim WhatsApp pengingat jika gateway aktif
+            if (config('services.whatsapp.enabled') && filled($appointment->patient_phone)) {
+                try {
+                    $waSender = app(WhatsAppSender::class);
+                    $branchName = $appointment->branch?->name ?? 'SAM';
+                    $timeStr = substr((string) $appointment->start_time, 0, 5);
+                    $msg = "Halo {$appointment->patient_name}, ini pengingat dari {$branchName}. Janji temu Anda terkonfirmasi untuk BESOK pukul {$timeStr} WIB (Kode: {$appointment->code}). Mohon hadir 10 menit lebih awal.";
+                    $waSender->send($appointment->patient_phone, $msg);
+                } catch (\Throwable $e) {
+                    Log::warning("Gagal mengirim WA pengingat H-1: {$e->getMessage()}");
+                }
             }
 
             $appointment->update([

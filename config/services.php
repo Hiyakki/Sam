@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'whatsapp' => [
+        'enabled' => env('WA_GATEWAY_ENABLED', false),
+        'driver' => env('WA_GATEWAY_DRIVER', 'null'),
+        'token' => env('WA_GATEWAY_TOKEN', ''),
+        'endpoint' => env('WA_GATEWAY_ENDPOINT', 'https://api.fonnte.com/send'),
+    ],
+
 ];

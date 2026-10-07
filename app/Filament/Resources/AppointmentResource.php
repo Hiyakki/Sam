@@ -202,8 +202,33 @@ class AppointmentResource extends Resource
                     ->label('Chat WA')
                     ->icon('heroicon-m-chat-bubble-left-right')
                     ->color('success')
-                    ->url(fn (Appointment $record) => self::whatsAppUrl($record))
-                    ->openUrlInNewTab(),
+                    ->form([
+                        Forms\Components\Select::make('template')
+                            ->label('Pilihan Template')
+                            ->options([
+                                'confirm' => 'Template Konfirmasi Jadwal',
+                                'reminder' => 'Template Pengingat Kehadiran',
+                                'reschedule' => 'Template Penyesuaian Jadwal',
+                            ])
+                            ->default('confirm')
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, Forms\Set $set, Appointment $record) {
+                                $set('message', self::generateTemplateMessage($record, $state));
+                            }),
+                        Forms\Components\Textarea::make('message')
+                            ->label('Isi Pesan WhatsApp (Dapat Diedit)')
+                            ->rows(5)
+                            ->required()
+                            ->default(fn (Appointment $record) => self::generateTemplateMessage($record, 'confirm')),
+                    ])
+                    ->modalHeading(fn (Appointment $record) => "Kirim WhatsApp ke {$record->patient_name}")
+                    ->modalSubmitActionLabel('Buka WhatsApp')
+                    ->action(function (Appointment $record, array $data) {
+                        $encoded = rawurlencode($data['message']);
+                        $url = 'https://wa.me/'.$record->patient_phone.'?text='.$encoded;
+
+                        return redirect()->away($url);
+                    }),
 
                 Tables\Actions\Action::make('prescription')
                     ->label('Resep')
@@ -240,18 +265,27 @@ class AppointmentResource extends Resource
     }
 
     /**
+     * Template pesan WhatsApp dinamis yang dapat dipilih dan diedit oleh admin.
+     */
+    public static function generateTemplateMessage(Appointment $record, string $type = 'confirm'): string
+    {
+        $date = $record->appointment_date?->translatedFormat('l, d F Y') ?? '-';
+        $time = substr((string) $record->start_time, 0, 5);
+        $branch = $record->branch?->name ?? 'SAM Orthotic Prosthetic';
+
+        return match ($type) {
+            'reminder' => "Halo {$record->patient_name}, kami mengingatkan kembali jadwal janji temu Anda di {$branch} pada {$date} pukul {$time} WIB (Kode: {$record->code}). Mohon hadir 10 menit lebih awal. Terima kasih!",
+            'reschedule' => "Halo {$record->patient_name}, mengenai janji temu Anda di {$branch} (Kode: {$record->code}), apakah Anda bersedia kami sesuaikan jadwal kunjungannya? Mohon informasikan ketersediaan waktu Anda.",
+            default => "Halo {$record->patient_name}, janji temu Anda di {$branch} pada {$date} pukul {$time} WIB dengan kode {$record->code} telah kami konfirmasi. Silakan datang sesuai jadwal.",
+        };
+    }
+
+    /**
      * Link wa.me ke pasien dengan pesan template sesuai status.
      */
     public static function whatsAppUrl(Appointment $record): string
     {
-        $date = $record->appointment_date?->translatedFormat('l, d F Y');
-        $time = substr((string) $record->start_time, 0, 5);
-        $branch = $record->branch?->name;
-
-        $message = match ($record->status) {
-            'confirmed' => "Halo {$record->patient_name}, kami mengingatkan janji Anda di {$branch} pada {$date} pukul {$time} WIB (kode {$record->code}). Sampai jumpa!",
-            default => "Halo {$record->patient_name}, janji Anda di {$branch} pada {$date} pukul {$time} WIB (kode {$record->code}) sudah kami terima. Mohon balas pesan ini untuk konfirmasi.",
-        };
+        $message = self::generateTemplateMessage($record, $record->status === 'confirmed' ? 'reminder' : 'confirm');
 
         return 'https://wa.me/'.$record->patient_phone.'?text='.rawurlencode($message);
     }
