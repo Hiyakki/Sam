@@ -401,4 +401,40 @@
         </div>
     </div>
 </section>
+
+<!-- Schema.org JSON-LD Structured Data -->
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'MedicalBusiness',
+    'name' => $settings['company.name'] ?? 'SAM Orthotic Prosthetic',
+    'url' => url('/'),
+    'description' => 'Layanan klinis dan fabrikasi alat bantu gerak tubuh ortotik prostetik kustom presisi tinggi sejak 2014.',
+    'telephone' => $settings['company.whatsapp'] ?? '+6281234567890',
+    'email' => $settings['company.email'] ?? 'info@sam-orthotic.com',
+    'address' => [
+        '@type' => 'PostalAddress',
+        'streetAddress' => $settings['company.address'] ?? 'Indonesia',
+        'addressCountry' => 'ID',
+    ],
+    'medicalSpecialty' => [
+        'Orthotics',
+        'Prosthetics',
+    ],
+    'availableService' => [
+        [
+            '@type' => 'MedicalProcedure',
+            'name' => 'Pembuatan Kaki Palsu & Tangan Palsu Kustom',
+        ],
+        [
+            '@type' => 'MedicalProcedure',
+            'name' => 'Pembuatan Brace & Penyangga Tubuh (Orthosis)',
+        ],
+        [
+            '@type' => 'MedicalProcedure',
+            'name' => 'Pemeriksaan Biomekanik & Sesi Fitting Alat',
+        ],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}
+</script>
 @endsection

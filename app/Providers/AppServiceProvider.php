@@ -8,6 +8,7 @@ use App\Models\Appointment;
 use App\Observers\AppointmentObserver;
 use App\Services\WhatsApp\FonnteSender;
 use App\Services\WhatsApp\NullSender;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -42,6 +43,10 @@ class AppServiceProvider extends ServiceProvider
             $this->commands([
                 SendAppointmentRemindersCommand::class,
             ]);
+        }
+
+        if ($this->app->isProduction()) {
+            URL::forceScheme('https');
         }
     }
 }
