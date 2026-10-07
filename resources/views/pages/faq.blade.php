@@ -1,76 +1,136 @@
 @extends('layouts.app')
 
 @section('title', 'Pertanyaan Umum (FAQ) - SAM Orthotic Prosthetic')
+@section('meta_description', 'Temukan jawaban atas pertanyaan seputar pemesanan kaki palsu, brace ortotik, resep dokter, jadwal konsultasi, dan proses fitting di SAM.')
 
 @section('content')
-<div class="bg-gradient-to-b from-[#EBF2E8]/40 to-transparent py-12 border-b border-[#E3E3E1]/60">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
-        <span class="text-xs font-bold uppercase tracking-widest text-[#869480]">Pusat Informasi</span>
-        <h1 class="text-3xl sm:text-4xl font-bold font-['Playfair_Display'] text-[#242E24] mt-2">
+<!-- Header Banner -->
+<div class="bg-gradient-to-b from-[#EBF2E8]/60 via-[#F7F7F6] to-[#F7F7F6] py-12 sm:py-16 border-b border-[#E3E3E1]/60">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <span class="text-xs font-bold uppercase tracking-widest text-[#869480] bg-white/80 backdrop-blur-xs px-3 py-1 rounded-full border border-[#869480]/20 inline-block">
+            Pusat Informasi & Panduan
+        </span>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-['Playfair_Display'] text-[#242E24] mt-3 tracking-tight">
             Pertanyaan yang Sering Diajukan
         </h1>
-        <p class="text-sm sm:text-base text-[#4B5549] mt-3">
-            Temukan jawaban cepat seputar pembuatan alat, proses fitting, jadwal konsultasi, dan perawatan.
+        <p class="text-sm sm:text-base text-[#4B5549] mt-3 max-w-2xl mx-auto leading-relaxed">
+            Dapatkan informasi lengkap mengenai alur konsultasi, pembuatan alat ortotik & prostetik kustom, dokumen rujukan dokter, hingga penyesuaian alat.
         </p>
     </div>
 </div>
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-    <!-- Search Bar -->
-    <div class="relative">
+<!-- Main FAQ Section with Alpine Instant Search & Accordion -->
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+     x-data="{
+        searchQuery: '',
+        activeAccordion: null,
+        toggle(id) {
+            this.activeAccordion = (this.activeAccordion === id) ? null : id;
+        },
+        matches(question, answer, category) {
+            if (!this.searchQuery.trim()) return true;
+            const q = this.searchQuery.toLowerCase();
+            return question.toLowerCase().includes(q) ||
+                   answer.toLowerCase().includes(q) ||
+                   category.toLowerCase().includes(q);
+        }
+     }">
+
+    <!-- Search Input -->
+    <div class="relative mb-10">
         <input type="text"
-               placeholder="Cari topik atau kata kunci pertanyaan..."
-               class="w-full text-sm rounded-2xl border border-[#E3E3E1] py-3.5 pl-11 pr-4 focus:outline-hidden focus:border-[#869480] bg-white shadow-xs">
-        <svg class="w-5 h-5 text-[#869480] absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               x-model="searchQuery"
+               placeholder="Ketik kata kunci pertanyaan (misal: rujukan dokter, garansi, proses fitting, biaya)..."
+               class="w-full text-sm sm:text-base rounded-2xl border border-[#E3E3E1] py-4 pl-12 pr-10 focus:outline-hidden focus:border-[#869480] bg-white shadow-xs">
+        <svg class="w-5 h-5 text-[#869480] absolute left-4 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
+        <button type="button"
+                x-show="searchQuery.length > 0"
+                @click="searchQuery = ''"
+                class="absolute right-4 top-4 text-xs text-[#869480] hover:text-[#242E24] p-1 font-bold">
+            &times;
+        </button>
     </div>
 
-    <!-- Accordion Placeholder list -->
-    <div class="space-y-4" x-data="{ activeAccordion: 1 }">
-        <div class="bg-white rounded-2xl border border-[#E3E3E1] p-6 shadow-xs">
-            <button @click="activeAccordion = (activeAccordion === 1 ? null : 1)" class="w-full flex items-center justify-between text-left focus:outline-hidden">
-                <span class="font-semibold text-base text-[#242E24]">Bagaimana alur pembuatan kaki atau tangan palsu di SAM?</span>
-                <span class="text-[#869480] text-xl font-bold" x-text="activeAccordion === 1 ? '−' : '+'"></span>
-            </button>
-            <div x-show="activeAccordion === 1" class="mt-4 pt-4 border-t border-[#E3E3E1]/60 text-sm text-[#4B5549] leading-relaxed">
-                Alur dimulai dengan konsultasi dan asesmen kondisi fisik pasien, dilanjutkan dengan pengukuran dan pencetakan stump/tungkai, pembuatan cetakan kustom, sesi fitting pertama, penyesuaian akhir (alignment), dan latihan mobilitas.
-            </div>
-        </div>
+    @if($groupedFaqs->isNotEmpty())
+        <div class="space-y-10">
+            @foreach($groupedFaqs as $categoryName => $faqList)
+                <section class="space-y-4"
+                         x-data="{ hasVisibleItems: true }">
+                    <div class="flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#869480]"></span>
+                        <h2 class="text-xl font-bold font-['Playfair_Display'] text-[#242E24]">
+                            {{ $categoryName }}
+                        </h2>
+                    </div>
 
-        <div class="bg-white rounded-2xl border border-[#E3E3E1] p-6 shadow-xs">
-            <button @click="activeAccordion = (activeAccordion === 2 ? null : 2)" class="w-full flex items-center justify-between text-left focus:outline-hidden">
-                <span class="font-semibold text-base text-[#242E24]">Apakah wajib memiliki resep atau rujukan dokter?</span>
-                <span class="text-[#869480] text-xl font-bold" x-text="activeAccordion === 2 ? '−' : '+'"></span>
-            </button>
-            <div x-show="activeAccordion === 2" x-cloak class="mt-4 pt-4 border-t border-[#E3E3E1]/60 text-sm text-[#4B5549] leading-relaxed">
-                Resep dokter sangat disarankan terutama untuk kasus skoliosis, pasca-operasi, atau kelainan bawaan. Namun, Anda juga dapat berkonsultasi langsung dengan tim ortotis kami untuk asesmen awal.
-            </div>
-        </div>
+                    <div class="space-y-3">
+                        @foreach($faqList as $faq)
+                            <div class="bg-white rounded-2xl border border-[#E3E3E1] p-5 sm:p-6 shadow-xs transition-colors hover:border-[#869480]/40"
+                                 x-show="matches('{{ addslashes($faq->question) }}', '{{ addslashes(strip_tags($faq->answer)) }}', '{{ addslashes($categoryName) }}')"
+                                 x-transition>
+                                <button type="button"
+                                        @click="toggle({{ $faq->id }})"
+                                        class="w-full flex items-center justify-between text-left focus:outline-hidden gap-4">
+                                    <span class="font-semibold text-base sm:text-lg text-[#242E24]">
+                                        {{ $faq->question }}
+                                    </span>
+                                    <span class="w-8 h-8 rounded-full bg-[#F7F7F6] text-[#869480] flex items-center justify-center shrink-0 text-base font-bold transition-transform"
+                                          :class="activeAccordion === {{ $faq->id }} ? 'rotate-180 bg-[#EBF2E8] text-[#242E24]' : ''">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </span>
+                                </button>
 
-        <div class="bg-white rounded-2xl border border-[#E3E3E1] p-6 shadow-xs">
-            <button @click="activeAccordion = (activeAccordion === 3 ? null : 3)" class="w-full flex items-center justify-between text-left focus:outline-hidden">
-                <span class="font-semibold text-base text-[#242E24]">Berapa lama proses pembuatan alat?</span>
-                <span class="text-[#869480] text-xl font-bold" x-text="activeAccordion === 3 ? '−' : '+'"></span>
-            </button>
-            <div x-show="activeAccordion === 3" x-cloak class="mt-4 pt-4 border-t border-[#E3E3E1]/60 text-sm text-[#4B5549] leading-relaxed">
-                Waktu pengerjaan bervariasi antara 5 hingga 14 hari kerja tergantung tingkat kompleksitas alat, komponen yang digunakan, dan jadwal sesi fitting pasien.
-            </div>
+                                <div x-show="activeAccordion === {{ $faq->id }}"
+                                     x-cloak
+                                     class="mt-4 pt-4 border-t border-[#E3E3E1]/60 text-sm text-[#4B5549] leading-relaxed prose prose-sm max-w-none">
+                                    {!! nl2br(e($faq->answer)) !!}
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </section>
+            @endforeach
         </div>
-    </div>
+    @else
+        <!-- Empty State Default -->
+        <div class="bg-white rounded-3xl p-12 text-center border border-[#E3E3E1] shadow-xs">
+            <h3 class="font-bold text-lg text-[#242E24]">Belum Ada FAQ Tersedia</h3>
+            <p class="text-xs text-[#4B5549] mt-2">Daftar pertanyaan umum sedang disiapkan oleh tim medis kami.</p>
+        </div>
+    @endif
 
     <!-- Help Banner -->
-    <div class="bg-[#EBF2E8] border border-[#A5BF98]/40 rounded-2xl p-8 text-center space-y-3">
-        <h3 class="font-bold text-lg font-['Playfair_Display'] text-[#242E24]">Belum Menemukan Jawaban?</h3>
-        <p class="text-sm text-[#4B5549] max-w-md mx-auto">
-            Tim kami siap menjawab pertanyaan spesifik mengenai kebutuhan alat bantu atau kondisi Anda.
+    @php
+        $waNumber = preg_replace('/[^0-9]/', '', $settings['company.whatsapp'] ?? '6281234567890');
+    @endphp
+    <div class="mt-14 bg-gradient-to-br from-[#EBF2E8] to-[#EBF2E8]/40 border border-[#A5BF98]/50 rounded-3xl p-8 sm:p-10 text-center space-y-4 shadow-xs">
+        <div class="w-12 h-12 rounded-2xl bg-white text-[#869480] flex items-center justify-center mx-auto shadow-xs">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+        </div>
+        <h3 class="font-bold text-xl font-['Playfair_Display'] text-[#242E24]">
+            Pertanyaan Anda Belum Terjawab?
+        </h3>
+        <p class="text-sm text-[#4B5549] max-w-md mx-auto leading-relaxed">
+            Klinisi ortotis prostetis kami siap berdiskusi secara langsung untuk menganalisis kebutuhan alat tubuh Anda.
         </p>
         <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <a href="https://wa.me/6281234567890" target="_blank" class="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20b858] transition-colors">
-                Chat WhatsApp
+            <a href="https://wa.me/{{ $waNumber }}?text={{ urlencode('Halo SAM Orthotic Prosthetic, saya memiliki pertanyaan seputar konsultasi dan alat.') }}"
+               target="_blank"
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20b858] transition-colors shadow-xs">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+                </svg>
+                <span>Tanya via WhatsApp</span>
             </a>
-            <a href="{{ route('appointment') }}" class="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#E8343B] hover:bg-[#D1252C] transition-colors">
-                Buat Janji Konsultasi
+            <a href="{{ route('appointment') }}"
+               class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold text-white bg-[#E8343B] hover:bg-[#D1252C] transition-colors shadow-xs">
+                <span>Buat Janji Konsultasi</span>
             </a>
         </div>
     </div>

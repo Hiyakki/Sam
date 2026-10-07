@@ -59,4 +59,62 @@ class Branch extends Model
     {
         $query->where('is_active', true)->orderBy('sort_order', 'asc');
     }
+
+    /**
+     * Ringkasan jam operasional untuk tampilan publik.
+     */
+    public function getOperatingHoursSummaryAttribute(): string
+    {
+        $schedules = $this->schedules->sortBy('day_of_week');
+
+        if ($schedules->isEmpty()) {
+            return 'Senin - Sabtu: 08:00 - 17:00 WIB (Minggu Tutup)';
+        }
+
+        $openDays = $schedules->where('is_open', true);
+        $closedDays = $schedules->where('is_open', false);
+
+        if ($openDays->isEmpty()) {
+            return 'Sementara Tutup';
+        }
+
+        $firstOpen = $openDays->first();
+        $openTime = substr((string) $firstOpen->open_time, 0, 5);
+        $closeTime = substr((string) $firstOpen->close_time, 0, 5);
+
+        $dayNames = [
+            1 => 'Senin',
+            2 => 'Selasa',
+            3 => 'Rabu',
+            4 => 'Kamis',
+            5 => 'Jumat',
+            6 => 'Sabtu',
+            7 => 'Minggu',
+        ];
+
+        $openDayNumbers = $openDays->pluck('day_of_week')->sort()->values();
+
+        if ($openDayNumbers->count() === 6 && $openDayNumbers->last() === 6) {
+            return "Senin - Sabtu: {$openTime} - {$closeTime} WIB (Minggu Tutup)";
+        }
+
+        if ($openDayNumbers->count() === 7) {
+            return "Setiap Hari: {$openTime} - {$closeTime} WIB";
+        }
+
+        $summary = $openDays->map(function ($s) use ($dayNames) {
+            $day = $dayNames[$s->day_of_week] ?? '';
+            $open = substr((string) $s->open_time, 0, 5);
+            $close = substr((string) $s->close_time, 0, 5);
+
+            return "{$day}: {$open} - {$close}";
+        })->join(', ');
+
+        if ($closedDays->isNotEmpty()) {
+            $closedNames = $closedDays->map(fn ($s) => $dayNames[$s->day_of_week] ?? '')->filter()->join(', ');
+            $summary .= " ({$closedNames} Tutup)";
+        }
+
+        return $summary;
+    }
 }

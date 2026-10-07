@@ -2,10 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Models\Product;
+use App\Models\ProductCategory;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class Phase1VerificationTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_home_page_is_accessible_and_renders_layout(): void
     {
         $response = $this->get('/');
@@ -34,10 +39,18 @@ class Phase1VerificationTest extends TestCase
 
     public function test_catalog_show_page_is_accessible(): void
     {
+        $cat = ProductCategory::create(['name' => 'Orthosis', 'slug' => 'orthosis']);
+        Product::create([
+            'category_id' => $cat->id,
+            'name' => 'AFO Brace',
+            'slug' => 'afo-brace',
+            'is_active' => true,
+        ]);
+
         $response = $this->get('/katalog/afo-brace');
 
         $response->assertStatus(200);
-        $response->assertSee('afo brace');
+        $response->assertSee('AFO Brace');
     }
 
     public function test_faq_page_is_accessible(): void
