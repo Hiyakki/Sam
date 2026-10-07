@@ -40,8 +40,8 @@
 
     <!-- Alert Status Flash -->
     @if (session('status'))
-        <div class="mb-6 p-4 rounded-2xl bg-[#EBF2E8] border border-[#A5BF98] text-[#242E24] text-sm flex items-center gap-3">
-            <svg class="w-5 h-5 text-[#869480] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="mb-6 p-4 rounded-2xl bg-surface-soft border border-primary/20 text-primary text-sm flex items-center gap-3">
+            <svg class="w-5 h-5 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
             <span>{{ session('status') }}</span>
@@ -59,12 +59,12 @@
         </div>
     @endif
 
-    <div class="bg-white rounded-3xl p-6 sm:p-10 border border-[#E3E3E1] shadow-xs space-y-8">
+    <div class="bg-white rounded-3xl p-6 sm:p-10 border border-gray-200 shadow-xs space-y-8">
         <!-- Header Info -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E3E3E1] pb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-6">
             <div>
-                <span class="text-xs font-bold uppercase tracking-widest text-[#869480]">Detail Reservasi Pasien</span>
-                <h1 class="text-2xl sm:text-3xl font-bold font-['Playfair_Display'] text-[#242E24] mt-1">
+                <span class="text-xs font-bold uppercase tracking-widest text-primary">Detail Reservasi Pasien</span>
+                <h1 class="text-2xl sm:text-3xl font-bold font-['Playfair_Display'] text-primary mt-1">
                     Kode: {{ $appointment->code }}
                 </h1>
             </div>
@@ -97,23 +97,23 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs sm:text-sm">
             <!-- Kolom 1: Data Pasien -->
             <div class="space-y-4">
-                <h3 class="font-bold text-base font-['Playfair_Display'] text-[#242E24]">Informasi Pasien</h3>
+                <h3 class="font-bold text-base font-['Playfair_Display'] text-primary">Informasi Pasien</h3>
                 <div class="space-y-2.5">
                     <div>
-                        <span class="text-[#869480] block text-[11px] uppercase tracking-wider font-semibold">Nama Pasien</span>
-                        <span class="font-bold text-[#242E24]">{{ $appointment->patient_name }} ({{ $appointment->patient_age }} Tahun)</span>
+                        <span class="text-text-muted block text-[11px] uppercase tracking-wider font-semibold">Nama Pasien</span>
+                        <span class="font-bold text-primary">{{ $appointment->patient_name }} ({{ $appointment->patient_age }} Tahun)</span>
                     </div>
                     <div>
-                        <span class="text-[#869480] block text-[11px] uppercase tracking-wider font-semibold">Kontak WhatsApp</span>
-                        <span class="text-[#242E24]">{{ $appointment->patient_phone }}</span>
+                        <span class="text-text-muted block text-[11px] uppercase tracking-wider font-semibold">Kontak WhatsApp</span>
+                        <span class="text-primary font-medium">{{ $appointment->patient_phone }}</span>
                     </div>
                     <div>
-                        <span class="text-[#869480] block text-[11px] uppercase tracking-wider font-semibold">Email</span>
-                        <span class="text-[#242E24]">{{ $appointment->patient_email }}</span>
+                        <span class="text-text-muted block text-[11px] uppercase tracking-wider font-semibold">Email</span>
+                        <span class="text-primary font-medium">{{ $appointment->patient_email }}</span>
                     </div>
                     <div>
-                        <span class="text-[#869480] block text-[11px] uppercase tracking-wider font-semibold">Keluhan / Kebutuhan</span>
-                        <p class="text-[#4B5549] bg-[#F7F7F6] p-3 rounded-xl border border-[#E3E3E1] mt-1 leading-relaxed">
+                        <span class="text-text-muted block text-[11px] uppercase tracking-wider font-semibold">Keluhan / Kebutuhan</span>
+                        <p class="text-text-muted bg-surface-soft p-3 rounded-xl border border-gray-200 mt-1 leading-relaxed">
                             {{ $appointment->complaint }}
                         </p>
                     </div>
@@ -122,21 +122,21 @@
 
             <!-- Kolom 2: Jadwal & Lokasi -->
             <div class="space-y-4">
-                <h3 class="font-bold text-base font-['Playfair_Display'] text-[#242E24]">Jadwal & Lokasi</h3>
+                <h3 class="font-bold text-base font-['Playfair_Display'] text-primary">Jadwal & Lokasi</h3>
                 <div class="space-y-2.5">
                     <div>
-                        <span class="text-[#869480] block text-[11px] uppercase tracking-wider font-semibold">Kantor Cabang</span>
-                        <span class="font-bold text-[#242E24]">{{ $appointment->branch?->name }}</span>
-                        <p class="text-[11px] text-[#4B5549] mt-0.5">{{ $appointment->branch?->address }}</p>
+                        <span class="text-text-muted block text-[11px] uppercase tracking-wider font-semibold">Kantor Cabang</span>
+                        <span class="font-bold text-primary">{{ $appointment->branch?->name }}</span>
+                        <p class="text-[11px] text-text-muted mt-0.5">{{ $appointment->branch?->address }}</p>
                     </div>
                     <div>
-                        <span class="text-[#869480] block text-[11px] uppercase tracking-wider font-semibold">Layanan</span>
-                        <span class="font-semibold text-[#242E24]">{{ $appointment->service?->name }}</span>
+                        <span class="text-text-muted block text-[11px] uppercase tracking-wider font-semibold">Layanan</span>
+                        <span class="font-semibold text-primary">{{ $appointment->service?->name }}</span>
                     </div>
                     <div>
-                        <span class="text-[#869480] block text-[11px] uppercase tracking-wider font-semibold">Waktu Kedatangan</span>
-                        <div class="mt-1 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#EBF2E8] border border-[#A5BF98]/60 text-[#242E24] font-bold">
-                            <svg class="w-4 h-4 text-[#869480]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span class="text-text-muted block text-[11px] uppercase tracking-wider font-semibold">Waktu Kedatangan</span>
+                        <div class="mt-1 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-soft border border-surface-soft text-primary font-bold">
+                            <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             <span>{{ $appointment->appointment_date->isoFormat('dddd, D MMMM Y') }}</span>
@@ -149,17 +149,17 @@
         </div>
 
         <!-- Tombol Aksi Mandiri Pasien -->
-        <div class="pt-6 border-t border-[#E3E3E1] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div class="pt-6 border-t border-gray-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
             <div class="flex flex-wrap items-center gap-3">
                 <!-- Aksi 1: Ubah Jadwal -->
                 @if($canReschedule)
                     <button type="button"
                             @click="showRescheduleModal = true"
-                            class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#242E24] hover:bg-[#323D32] transition-colors shadow-xs">
+                            class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-primary hover:bg-primary-dark transition-colors shadow-xs">
                         Ubah Jadwal Kunjungan
                     </button>
                 @else
-                    <span class="text-xs text-[#869480] italic">
+                    <span class="text-xs text-text-muted italic">
                         @if(in_array($appointment->status, ['completed', 'cancelled', 'no_show']))
                             Jadwal tidak dapat diubah karena status sudah final.
                         @else
@@ -202,13 +202,13 @@
     <div x-show="showRescheduleModal"
          x-cloak
          class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-[#E3E3E1] shadow-xl space-y-6"
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-gray-200 shadow-xl space-y-6"
              @click.away="showRescheduleModal = false">
-            <div class="flex items-center justify-between border-b border-[#E3E3E1] pb-3">
-                <h3 class="font-bold text-lg font-['Playfair_Display'] text-[#242E24]">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-3">
+                <h3 class="font-bold text-lg font-['Playfair_Display'] text-primary">
                     Pilih Jadwal Kunjungan Baru
                 </h3>
-                <button type="button" @click="showRescheduleModal = false" class="text-[#869480] hover:text-[#242E24] text-xl font-bold">&times;</button>
+                <button type="button" @click="showRescheduleModal = false" class="text-text-muted hover:text-primary text-xl font-bold">&times;</button>
             </div>
 
             <form action="{{ route('appointment.reschedule', $appointment->code) }}" method="POST" class="space-y-4">
@@ -216,7 +216,7 @@
 
                 <!-- Pilih Tanggal Baru -->
                 <div>
-                    <label class="block text-xs font-bold text-[#242E24] uppercase tracking-wider mb-1.5">
+                    <label class="block text-xs font-bold text-primary uppercase tracking-wider mb-1.5">
                         Tanggal Kedatangan Baru
                     </label>
                     <input type="date"
@@ -225,16 +225,16 @@
                            @change="loadNewSlots()"
                            :min="new Date().toISOString().split('T')[0]"
                            required
-                           class="w-full text-sm rounded-xl border border-[#E3E3E1] px-4 py-3 bg-[#F7F7F6]">
+                           class="w-full text-sm rounded-xl border border-gray-200 px-4 py-3 bg-surface-soft focus:outline-hidden focus:border-primary">
                 </div>
 
                 <!-- Slot Waktu Baru -->
                 <div x-show="newDate" class="space-y-2">
-                    <label class="block text-xs font-bold text-[#242E24] uppercase tracking-wider">
+                    <label class="block text-xs font-bold text-primary uppercase tracking-wider">
                         Pilih Slot Jam Baru
                     </label>
 
-                    <div x-show="isLoadingSlots" class="text-xs text-[#869480] py-2 text-center">
+                    <div x-show="isLoadingSlots" class="text-xs text-text-muted py-2 text-center">
                         Memeriksa ketersediaan slot...
                     </div>
 
@@ -249,11 +249,11 @@
                                     :disabled="!slot.available"
                                     @click="newSlot = slot.start"
                                     :class="{
-                                        'bg-[#242E24] text-white font-bold ring-2 ring-[#242E24]': newSlot === slot.start && slot.available,
-                                        'bg-[#F7F7F6] text-[#242E24] hover:bg-[#EBF2E8] border border-[#E3E3E1]': newSlot !== slot.start && slot.available,
+                                        'bg-accent text-white font-bold ring-2 ring-primary shadow-xs': newSlot === slot.start && slot.available,
+                                        'bg-surface-soft text-primary hover:bg-white border border-gray-200': newSlot !== slot.start && slot.available,
                                         'bg-gray-100 text-gray-400 opacity-50 cursor-not-allowed': !slot.available
                                     }"
-                                    class="p-2.5 rounded-lg text-xs flex flex-col items-center justify-center">
+                                    class="p-2.5 rounded-lg text-xs flex flex-col items-center justify-center transition-all">
                                 <span class="font-semibold" x-text="slot.start"></span>
                                 <span class="text-[9px] opacity-75" x-text="slot.available ? 'Tersedia' : 'Penuh'"></span>
                             </button>
@@ -263,15 +263,15 @@
                     <input type="hidden" name="start_time" :value="newSlot" required>
                 </div>
 
-                <div class="pt-4 flex items-center justify-end gap-3 border-t border-[#E3E3E1]">
+                <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-200">
                     <button type="button"
                             @click="showRescheduleModal = false"
-                            class="px-4 py-2 text-xs font-semibold text-[#4B5549] hover:bg-[#F7F7F6] rounded-xl">
+                            class="px-4 py-2 text-xs font-semibold text-text-muted hover:bg-surface-soft rounded-xl transition-colors">
                         Batal
                     </button>
                     <button type="submit"
                             :disabled="!newSlot"
-                            class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#E8343B] hover:bg-[#D1252C] disabled:opacity-50 transition-colors">
+                            class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-accent hover:bg-accent-hover disabled:opacity-50 transition-colors shadow-xs">
                         Simpan Perubahan Jadwal
                     </button>
                 </div>

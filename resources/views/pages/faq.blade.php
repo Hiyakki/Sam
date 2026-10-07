@@ -5,15 +5,15 @@
 
 @section('content')
 <!-- Header Banner -->
-<div class="bg-gradient-to-b from-[#EBF2E8]/60 via-[#F7F7F6] to-[#F7F7F6] py-12 sm:py-16 border-b border-[#E3E3E1]/60">
+<div class="bg-gradient-to-b from-surface-soft via-background to-background py-12 sm:py-16 border-b border-gray-200">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <span class="text-xs font-bold uppercase tracking-widest text-[#869480] bg-white/80 backdrop-blur-xs px-3 py-1 rounded-full border border-[#869480]/20 inline-block">
+        <span class="text-xs font-bold uppercase tracking-widest text-primary bg-white px-3 py-1 rounded-full border border-gray-200 inline-block shadow-2xs">
             Pusat Informasi & Panduan
         </span>
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-['Playfair_Display'] text-[#242E24] mt-3 tracking-tight">
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-['Playfair_Display'] text-primary mt-3 tracking-tight">
             Pertanyaan yang Sering Diajukan
         </h1>
-        <p class="text-sm sm:text-base text-[#4B5549] mt-3 max-w-2xl mx-auto leading-relaxed">
+        <p class="text-sm sm:text-base text-text-muted mt-3 max-w-2xl mx-auto leading-relaxed">
             Dapatkan informasi lengkap mengenai alur konsultasi, pembuatan alat ortotik & prostetik kustom, dokumen rujukan dokter, hingga penyesuaian alat.
         </p>
     </div>
@@ -41,14 +41,14 @@
         <input type="text"
                x-model="searchQuery"
                placeholder="Ketik kata kunci pertanyaan (misal: rujukan dokter, garansi, proses fitting, biaya)..."
-               class="w-full text-sm sm:text-base rounded-2xl border border-[#E3E3E1] py-4 pl-12 pr-10 focus:outline-hidden focus:border-[#869480] bg-white shadow-xs">
-        <svg class="w-5 h-5 text-[#869480] absolute left-4 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="w-full text-sm sm:text-base rounded-2xl border border-gray-200 py-4 pl-12 pr-10 focus:outline-hidden focus:border-primary bg-white shadow-xs">
+        <svg class="w-5 h-5 text-primary absolute left-4 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
         <button type="button"
                 x-show="searchQuery.length > 0"
                 @click="searchQuery = ''"
-                class="absolute right-4 top-4 text-xs text-[#869480] hover:text-[#242E24] p-1 font-bold">
+                class="absolute right-4 top-4 text-xs text-text-muted hover:text-primary p-1 font-bold">
             &times;
         </button>
     </div>
@@ -59,25 +59,25 @@
                 <section class="space-y-4"
                          x-data="{ hasVisibleItems: true }">
                     <div class="flex items-center gap-3">
-                        <span class="w-2.5 h-2.5 rounded-full bg-[#869480]"></span>
-                        <h2 class="text-xl font-bold font-['Playfair_Display'] text-[#242E24]">
+                        <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
+                        <h2 class="text-xl font-bold font-['Playfair_Display'] text-primary">
                             {{ $categoryName }}
                         </h2>
                     </div>
 
                     <div class="space-y-3">
                         @foreach($faqList as $faq)
-                            <div class="bg-white rounded-2xl border border-[#E3E3E1] p-5 sm:p-6 shadow-xs transition-colors hover:border-[#869480]/40"
+                            <div class="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-xs transition-colors hover:border-primary/40"
                                  x-show="matches('{{ addslashes($faq->question) }}', '{{ addslashes(strip_tags($faq->answer)) }}', '{{ addslashes($categoryName) }}')"
                                  x-transition>
                                 <button type="button"
                                         @click="toggle({{ $faq->id }})"
                                         class="w-full flex items-center justify-between text-left focus:outline-hidden gap-4">
-                                    <span class="font-semibold text-base sm:text-lg text-[#242E24]">
+                                    <span class="font-semibold text-base sm:text-lg text-primary">
                                         {{ $faq->question }}
                                     </span>
-                                    <span class="w-8 h-8 rounded-full bg-[#F7F7F6] text-[#869480] flex items-center justify-center shrink-0 text-base font-bold transition-transform"
-                                          :class="activeAccordion === {{ $faq->id }} ? 'rotate-180 bg-[#EBF2E8] text-[#242E24]' : ''">
+                                    <span class="w-8 h-8 rounded-full bg-surface-soft text-primary flex items-center justify-center shrink-0 text-base font-bold transition-transform"
+                                          :class="activeAccordion === {{ $faq->id }} ? 'rotate-180 bg-primary text-white' : ''">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -86,7 +86,7 @@
 
                                 <div x-show="activeAccordion === {{ $faq->id }}"
                                      x-cloak
-                                     class="mt-4 pt-4 border-t border-[#E3E3E1]/60 text-sm text-[#4B5549] leading-relaxed prose prose-sm max-w-none">
+                                     class="mt-4 pt-4 border-t border-gray-200 text-sm text-text-muted leading-relaxed prose prose-sm max-w-none">
                                     {!! nl2br(e($faq->answer)) !!}
                                 </div>
                             </div>
@@ -97,26 +97,26 @@
         </div>
     @else
         <!-- Empty State Default -->
-        <div class="bg-white rounded-3xl p-12 text-center border border-[#E3E3E1] shadow-xs">
-            <h3 class="font-bold text-lg text-[#242E24]">Belum Ada FAQ Tersedia</h3>
-            <p class="text-xs text-[#4B5549] mt-2">Daftar pertanyaan umum sedang disiapkan oleh tim medis kami.</p>
+        <div class="bg-white rounded-3xl p-12 text-center border border-gray-200 shadow-xs">
+            <h3 class="font-bold text-lg text-primary">Belum Ada FAQ Tersedia</h3>
+            <p class="text-xs text-text-muted mt-2">Daftar pertanyaan umum sedang disiapkan oleh tim medis kami.</p>
         </div>
     @endif
 
-    <!-- Help Banner -->
+    <!-- Help Banner (Navy Background) -->
     @php
         $waNumber = preg_replace('/[^0-9]/', '', $settings['company.whatsapp'] ?? '6281234567890');
     @endphp
-    <div class="mt-14 bg-gradient-to-br from-[#EBF2E8] to-[#EBF2E8]/40 border border-[#A5BF98]/50 rounded-3xl p-8 sm:p-10 text-center space-y-4 shadow-xs">
-        <div class="w-12 h-12 rounded-2xl bg-white text-[#869480] flex items-center justify-center mx-auto shadow-xs">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="mt-14 bg-primary text-white border border-primary-dark rounded-3xl p-8 sm:p-10 text-center space-y-4 shadow-lg">
+        <div class="w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center mx-auto shadow-xs">
+            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
             </svg>
         </div>
-        <h3 class="font-bold text-xl font-['Playfair_Display'] text-[#242E24]">
+        <h3 class="font-bold text-xl font-['Playfair_Display'] text-white">
             Pertanyaan Anda Belum Terjawab?
         </h3>
-        <p class="text-sm text-[#4B5549] max-w-md mx-auto leading-relaxed">
+        <p class="text-sm text-white/80 max-w-md mx-auto leading-relaxed">
             Klinisi ortotis prostetis kami siap berdiskusi secara langsung untuk menganalisis kebutuhan alat tubuh Anda.
         </p>
         <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -129,7 +129,7 @@
                 <span>Tanya via WhatsApp</span>
             </a>
             <a href="{{ route('appointment') }}"
-               class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold text-white bg-[#E8343B] hover:bg-[#D1252C] transition-colors shadow-xs">
+               class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold text-white bg-accent hover:bg-accent-hover transition-colors shadow-xs">
                 <span>Buat Janji Konsultasi</span>
             </a>
         </div>
