@@ -13,15 +13,15 @@ class BranchSeeder extends Seeder
         $branch = Branch::firstOrCreate(
             ['slug' => 'sam-bogor'],
             [
-                'name'           => 'SAM Bogor',
-                'address'        => 'Jl. Contoh No. 1, Bogor, Jawa Barat [LENGKAPI]',
-                'phone_wa'       => '6281234567890',
-                'email'          => 'sam.bogor@example.com',
+                'name' => 'SAM Bogor',
+                'address' => 'Jl. Contoh No. 1, Bogor, Jawa Barat [LENGKAPI]',
+                'phone_wa' => '6281234567890',
+                'email' => 'sam.bogor@example.com',
                 'maps_embed_url' => null,
-                'maps_link'      => null,
-                'photo'          => null,
-                'is_active'      => true,
-                'sort_order'     => 1,
+                'maps_link' => null,
+                'photo' => null,
+                'is_active' => true,
+                'sort_order' => 1,
             ]
         );
 

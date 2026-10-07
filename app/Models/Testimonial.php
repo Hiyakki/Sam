@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Validation\ValidationException;
 
 class Testimonial extends Model
 {
@@ -28,10 +29,24 @@ class Testimonial extends Model
     {
         return [
             'consent_confirmed' => 'boolean',
-            'is_active'         => 'boolean',
-            'sort_order'        => 'integer',
-            'rating'            => 'integer',
+            'is_active' => 'boolean',
+            'sort_order' => 'integer',
+            'rating' => 'integer',
         ];
+    }
+
+    /**
+     * Lapisan pengaman terakhir: testimoni tidak boleh aktif tanpa izin tampil.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Testimonial $testimonial) {
+            if ($testimonial->is_active && ! $testimonial->consent_confirmed) {
+                throw ValidationException::withMessages([
+                    'is_active' => 'Testimoni tidak bisa diaktifkan sebelum izin tampil dikonfirmasi.',
+                ]);
+            }
+        });
     }
 
     public function product(): BelongsTo

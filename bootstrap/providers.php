@@ -1,6 +1,9 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\Filament\KelolaSamPanelProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\Filament\KelolaSamPanelProvider::class,
+    AppServiceProvider::class,
+    KelolaSamPanelProvider::class,
 ];

@@ -4,12 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\BranchResource\Pages;
 use App\Models\Branch;
-use App\Models\Service;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class BranchResource extends Resource
@@ -223,13 +223,13 @@ class BranchResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListBranches::route('/'),
+            'index' => Pages\ListBranches::route('/'),
             'create' => Pages\CreateBranch::route('/create'),
-            'edit'   => Pages\EditBranch::route('/{record}/edit'),
+            'edit' => Pages\EditBranch::route('/{record}/edit'),
         ];
     }
 
-    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->withTrashed();
     }

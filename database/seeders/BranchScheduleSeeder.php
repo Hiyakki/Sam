@@ -26,15 +26,15 @@ class BranchScheduleSeeder extends Seeder
         foreach ($schedules as $schedule) {
             BranchSchedule::updateOrCreate(
                 [
-                    'branch_id'   => $branch->id,
+                    'branch_id' => $branch->id,
                     'day_of_week' => $schedule['day_of_week'],
                 ],
                 [
-                    'is_open'              => $schedule['is_open'],
-                    'open_time'            => $schedule['open_time'],
-                    'close_time'           => $schedule['close_time'],
+                    'is_open' => $schedule['is_open'],
+                    'open_time' => $schedule['open_time'],
+                    'close_time' => $schedule['close_time'],
                     'slot_duration_minutes' => 60,
-                    'capacity_per_slot'    => 1,
+                    'capacity_per_slot' => 1,
                 ]
             );
         }

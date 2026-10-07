@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\AppointmentResource;
 use App\Models\Appointment;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -12,7 +13,7 @@ class AppointmentsTableWidget extends BaseWidget
 {
     protected static ?int $sort = 2;
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     protected static ?string $heading = '5 Janji Terdekat';
 
@@ -53,23 +54,23 @@ class AppointmentsTableWidget extends BaseWidget
                         'warning' => 'pending',
                         'success' => 'confirmed',
                         'primary' => 'completed',
-                        'danger'  => 'cancelled',
-                        'gray'    => 'no_show',
+                        'danger' => 'cancelled',
+                        'gray' => 'no_show',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'pending'   => 'Menunggu',
+                        'pending' => 'Menunggu',
                         'confirmed' => 'Dikonfirmasi',
                         'completed' => 'Selesai',
                         'cancelled' => 'Dibatalkan',
-                        'no_show'   => 'Tidak Hadir',
-                        default     => $state,
+                        'no_show' => 'Tidak Hadir',
+                        default => $state,
                     }),
             ])
             ->actions([
                 Tables\Actions\Action::make('lihat')
                     ->label('Lihat')
                     ->icon('heroicon-m-eye')
-                    ->url(fn (Appointment $record): string => route('filament.kelola-sam.resources.appointments.edit', $record)),
+                    ->url(fn (Appointment $record): string => AppointmentResource::getUrl('view', ['record' => $record])),
             ]);
     }
 }

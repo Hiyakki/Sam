@@ -26,25 +26,25 @@ class ProductSeeder extends Seeder
         foreach ($products as $i => $data) {
             $slug = Str::slug($data['name']);
             // Pastikan slug unik bila ada nama yang sama
-            $existing = Product::where('slug', 'like', $slug . '%')
+            $existing = Product::where('slug', 'like', $slug.'%')
                 ->whereNot('id', 0)->count();
             if ($existing > 0) {
-                $slug = $slug . '-' . ($existing + 1);
+                $slug = $slug.'-'.($existing + 1);
             }
 
             Product::firstOrCreate(
                 ['slug' => Str::slug($data['name'])],
                 [
                     'category_id' => $category->id,
-                    'name'        => $data['name'],
-                    'slug'        => Str::slug($data['name']),
+                    'name' => $data['name'],
+                    'slug' => Str::slug($data['name']),
                     'description' => $data['description'] ?? null,
-                    'function'    => $data['function'] ?? null,
-                    'indication'  => $data['indication'] ?? null,
-                    'photo'       => null,
-                    'is_active'   => true,
-                    'sort_order'  => $i + 1,
-                    'price'       => null,
+                    'function' => $data['function'] ?? null,
+                    'indication' => $data['indication'] ?? null,
+                    'photo' => null,
+                    'is_active' => true,
+                    'sort_order' => $i + 1,
+                    'price' => null,
                 ]
             );
         }
@@ -54,48 +54,48 @@ class ProductSeeder extends Seeder
     {
         $this->create('upper-limb-orthosis', [
             [
-                'name'       => 'Wrist Thumb Support',
-                'function'   => 'Fiksasi',
+                'name' => 'Wrist Thumb Support',
+                'function' => 'Fiksasi',
                 'indication' => 'Rheumatic Arthritis, Trigger Finger',
             ],
             [
-                'name'       => 'Wrist Support (Tipe 1)',
-                'function'   => 'Fiksasi',
+                'name' => 'Wrist Support (Tipe 1)',
+                'function' => 'Fiksasi',
                 'indication' => 'CTS ringan, Trauma pergelangan tangan, Tendinitis pergelangan tangan',
             ],
             [
-                'name'       => 'Wrist Support (Tipe 2)',
-                'function'   => 'Fiksasi',
+                'name' => 'Wrist Support (Tipe 2)',
+                'function' => 'Fiksasi',
                 'indication' => 'CTS, Trauma pergelangan tangan, Tendinitis pergelangan tangan',
             ],
             [
-                'name'       => 'Thumb Support',
-                'function'   => 'Fiksasi',
+                'name' => 'Thumb Support',
+                'function' => 'Fiksasi',
                 'indication' => 'Rheumatic Arthritis, Trigger Finger',
             ],
             [
-                'name'       => 'Finger Splint',
-                'function'   => 'Fiksasi dan Koreksi',
+                'name' => 'Finger Splint',
+                'function' => 'Fiksasi dan Koreksi',
                 'indication' => 'Trigger Finger',
             ],
             [
-                'name'       => 'Dynamic Cock Up Splint',
-                'function'   => 'Fiksasi dan Koreksi',
+                'name' => 'Dynamic Cock Up Splint',
+                'function' => 'Fiksasi dan Koreksi',
                 'indication' => 'Post OP fraktur radius atau ulna, Nerve Injury, Drop hand',
             ],
             [
-                'name'       => 'Resting Splint',
-                'function'   => 'Fiksasi, Koreksi',
+                'name' => 'Resting Splint',
+                'function' => 'Fiksasi, Koreksi',
                 'indication' => 'Drop hand, Post Stroke, CP, Claw hand, Post OP',
             ],
             [
-                'name'       => 'Axillary Support',
-                'function'   => 'Fiksasi',
+                'name' => 'Axillary Support',
+                'function' => 'Fiksasi',
                 'indication' => 'Cedera shoulder',
             ],
             [
-                'name'       => 'Shoulder Support',
-                'function'   => 'Fiksasi',
+                'name' => 'Shoulder Support',
+                'function' => 'Fiksasi',
                 'indication' => 'Cedera Acromio Clavicular joint',
             ],
         ]);
@@ -105,73 +105,73 @@ class ProductSeeder extends Seeder
     {
         $this->create('lower-limb-orthosis', [
             [
-                'name'       => 'Insole',
-                'function'   => 'Fiksasi dan Koreksi',
+                'name' => 'Insole',
+                'function' => 'Fiksasi dan Koreksi',
                 'indication' => 'Flatfoot, Intoeing',
             ],
             [
-                'name'       => 'Dennis Brown Splint (DBS)',
-                'function'   => 'Koreksi dan Fiksasi',
+                'name' => 'Dennis Brown Splint (DBS)',
+                'function' => 'Koreksi dan Fiksasi',
                 'indication' => 'CTEV',
             ],
             [
-                'name'       => 'SMO Splint',
-                'function'   => 'Koreksi',
+                'name' => 'SMO Splint',
+                'function' => 'Koreksi',
                 'indication' => 'Ankle tidak stabil, bagian tengah kaki tidak lurus, kaki bengkok ke dalam atau keluar',
             ],
             [
-                'name'       => 'Orthopedic Shoes',
-                'function'   => 'Koreksi',
+                'name' => 'Orthopedic Shoes',
+                'function' => 'Koreksi',
                 'indication' => 'Flatfoot, LLD, Intoeing & Toeingout, Metatarsus Adductus',
             ],
             [
-                'name'       => 'Diabetic Shoes',
-                'function'   => 'Fiksasi',
+                'name' => 'Diabetic Shoes',
+                'function' => 'Fiksasi',
                 'indication' => 'Diabetes mellitus',
             ],
             [
-                'name'       => 'AFO',
-                'function'   => 'Fiksasi, Koreksi',
+                'name' => 'AFO',
+                'function' => 'Fiksasi, Koreksi',
                 'indication' => 'CP, CTEV, LLD, Polio, Drop Foot, Pes Valgus, Pes Varus',
             ],
             [
-                'name'       => 'PTB Brace',
-                'function'   => 'Fiksasi, Koreksi',
+                'name' => 'PTB Brace',
+                'function' => 'Fiksasi, Koreksi',
                 'indication' => 'Charcot Joint, Pembengkakan, Fraktur',
             ],
             [
-                'name'       => 'AFO with Rocker Bottom',
-                'function'   => 'Fiksasi, Koreksi',
+                'name' => 'AFO with Rocker Bottom',
+                'function' => 'Fiksasi, Koreksi',
                 'indication' => 'Nyeri, sensitif saat berjalan [LENGKAPI: indikasi terpotong]',
             ],
             [
-                'name'       => 'KAFO',
-                'function'   => 'Koreksi dan Kompensasi',
+                'name' => 'KAFO',
+                'function' => 'Koreksi dan Kompensasi',
                 'indication' => 'CP, Genu Valgus, Genu Varus, Post Poliomyelitis, Atrofi otot',
             ],
             [
-                'name'       => 'HKAFO',
-                'function'   => 'Fiksasi dan Mobilisasi',
+                'name' => 'HKAFO',
+                'function' => 'Fiksasi dan Mobilisasi',
                 'indication' => 'Paraplegia, Spina Bifida, CP, Dislokasi panggul',
             ],
             [
-                'name'       => 'Knee Brace (Tipe 1)',
-                'function'   => 'Fiksasi dan Koreksi',
+                'name' => 'Knee Brace (Tipe 1)',
+                'function' => 'Fiksasi dan Koreksi',
                 'indication' => 'Genu Valgus, Genu Varus, Hiperekstensi/hiperfleksi Knee, Knee Laxity',
             ],
             [
-                'name'       => 'Knee Brace (Tipe 2)',
-                'function'   => 'Fiksasi dan Mobilisasi',
+                'name' => 'Knee Brace (Tipe 2)',
+                'function' => 'Fiksasi dan Mobilisasi',
                 'indication' => 'ACL, kaki O/X, Limitasi pergerakan lutut grade 2, 3, dan 4',
             ],
             [
-                'name'       => 'Hip Stabilizer',
-                'function'   => 'Fiksasi',
+                'name' => 'Hip Stabilizer',
+                'function' => 'Fiksasi',
                 'indication' => 'Limitasi pergerakan hip joint',
             ],
             [
-                'name'       => 'Ankle Support',
-                'function'   => 'Fiksasi dan Mobilisasi',
+                'name' => 'Ankle Support',
+                'function' => 'Fiksasi dan Mobilisasi',
                 'indication' => 'Cedera pergelangan kaki',
             ],
         ]);
@@ -181,78 +181,78 @@ class ProductSeeder extends Seeder
     {
         $this->create('spinal-orthosis', [
             [
-                'name'       => 'Soft Collar Neck',
-                'function'   => 'Fiksasi',
+                'name' => 'Soft Collar Neck',
+                'function' => 'Fiksasi',
                 'indication' => 'CP, Trauma leher, Fraktur Cervical (cedera ringan)',
             ],
             [
-                'name'       => 'Semi Rigid Collar (Rigid Collar Neck)',
-                'function'   => 'Fiksasi',
+                'name' => 'Semi Rigid Collar (Rigid Collar Neck)',
+                'function' => 'Fiksasi',
                 'indication' => 'CP, Trauma leher, Fraktur Cervical',
             ],
             [
-                'name'       => 'Collar Brace',
-                'function'   => 'Fiksasi',
+                'name' => 'Collar Brace',
+                'function' => 'Fiksasi',
                 'indication' => 'CP, Trauma leher, Fraktur Cervical (cedera berat)',
             ],
             [
-                'name'       => 'LS Corset',
-                'function'   => 'Fiksasi',
+                'name' => 'LS Corset',
+                'function' => 'Fiksasi',
                 'indication' => 'Cedera otot area lumbal, HNP, Spondylosis, LBP, Arthritis',
             ],
             [
-                'name'       => 'LSO Brace',
-                'function'   => 'Fiksasi',
+                'name' => 'LSO Brace',
+                'function' => 'Fiksasi',
                 'indication' => 'Fraktur, LBP',
             ],
             [
-                'name'       => 'LSO Fabric',
-                'function'   => 'Fiksasi',
+                'name' => 'LSO Fabric',
+                'function' => 'Fiksasi',
                 'indication' => 'Fraktur, LBP',
             ],
             [
-                'name'       => 'TLSK',
-                'function'   => 'Fiksasi',
+                'name' => 'TLSK',
+                'function' => 'Fiksasi',
                 'indication' => 'Nyeri otot, HNP, LBP',
             ],
             [
-                'name'       => 'TLSK Fabric',
-                'function'   => 'Fiksasi',
+                'name' => 'TLSK Fabric',
+                'function' => 'Fiksasi',
                 'indication' => 'Nyeri otot, HNP, LBP',
             ],
             [
-                'name'       => 'TLSO',
-                'function'   => 'Fiksasi dan Koreksi',
+                'name' => 'TLSO',
+                'function' => 'Fiksasi dan Koreksi',
                 'indication' => 'HNP, LBP, Post Op, Fraktur',
             ],
             [
-                'name'       => 'Jewett Brace',
-                'function'   => 'Fiksasi',
+                'name' => 'Jewett Brace',
+                'function' => 'Fiksasi',
                 'indication' => 'Fraktur, Kifosis [LENGKAPI: indikasi terpotong]',
             ],
             [
-                'name'       => 'CTO Brace',
-                'function'   => 'Fiksasi',
+                'name' => 'CTO Brace',
+                'function' => 'Fiksasi',
                 'indication' => 'Fraktur, Spinal Injury, Whiplash Injury',
             ],
             [
-                'name'       => 'Scoliosis Brace (Milwaukee)',
-                'function'   => 'Koreksi derajat skoliosis',
+                'name' => 'Scoliosis Brace (Milwaukee)',
+                'function' => 'Koreksi derajat skoliosis',
                 'indication' => 'Scoliosis',
             ],
             [
-                'name'       => 'Scoliosis Brace (MSO)',
-                'function'   => 'Koreksi derajat skoliosis',
+                'name' => 'Scoliosis Brace (MSO)',
+                'function' => 'Koreksi derajat skoliosis',
                 'indication' => 'Scoliosis',
             ],
             [
-                'name'       => 'Scoliosis Brace (Asymmetric MSO)',
-                'function'   => 'Koreksi derajat skoliosis',
+                'name' => 'Scoliosis Brace (Asymmetric MSO)',
+                'function' => 'Koreksi derajat skoliosis',
                 'indication' => 'Scoliosis',
             ],
             [
-                'name'       => 'Scoliosis Brace (DMSO)',
-                'function'   => 'Koreksi derajat skoliosis',
+                'name' => 'Scoliosis Brace (DMSO)',
+                'function' => 'Koreksi derajat skoliosis',
                 'indication' => 'Scoliosis',
             ],
         ]);
@@ -262,23 +262,23 @@ class ProductSeeder extends Seeder
     {
         $this->create('upper-limb-prosthesis', [
             [
-                'name'       => 'Finger Prosthesis',
+                'name' => 'Finger Prosthesis',
                 'indication' => 'Level amputasi pada jari-jari tangan',
             ],
             [
-                'name'       => 'Hand Gloves Prosthesis',
+                'name' => 'Hand Gloves Prosthesis',
                 'indication' => 'Level amputasi bawah pergelangan tangan (telapak sampai jari tangan)',
             ],
             [
-                'name'       => 'AE Prosthesis',
+                'name' => 'AE Prosthesis',
                 'indication' => 'Amputasi di bawah sendi bahu',
             ],
             [
-                'name'       => 'BE Prosthesis',
+                'name' => 'BE Prosthesis',
                 'indication' => 'Amputasi di bawah sendi siku',
             ],
             [
-                'name'       => 'BBE Prosthesis',
+                'name' => 'BBE Prosthesis',
                 'indication' => 'Amputasi di bawah sendi siku [LENGKAPI: mohon dikonfirmasi perbedaan dengan BE]',
             ],
         ]);
@@ -288,23 +288,23 @@ class ProductSeeder extends Seeder
     {
         $this->create('lower-limb-prosthesis', [
             [
-                'name'       => 'Foot Prosthesis',
+                'name' => 'Foot Prosthesis',
                 'indication' => 'Level amputasi bawah pergelangan kaki sampai jari-jari kaki',
             ],
             [
-                'name'       => 'Transtibial Prosthesis',
+                'name' => 'Transtibial Prosthesis',
                 'indication' => 'Level amputasi bawah lutut / tulang tibia',
             ],
             [
-                'name'       => 'Syme Prosthesis',
+                'name' => 'Syme Prosthesis',
                 'indication' => 'Level amputasi tulang tibia dan ankle',
             ],
             [
-                'name'       => 'Transfemoral Prosthesis',
+                'name' => 'Transfemoral Prosthesis',
                 'indication' => 'Level amputasi bawah pinggang / tulang femur',
             ],
             [
-                'name'       => 'Hip Disarticulation Prosthesis',
+                'name' => 'Hip Disarticulation Prosthesis',
                 'indication' => 'Level amputasi tepat pada tulang hip',
             ],
         ]);

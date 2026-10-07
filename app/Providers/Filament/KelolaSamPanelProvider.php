@@ -2,9 +2,9 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\SiteSettings;
 use App\Filament\Widgets\AppointmentsTableWidget;
 use App\Filament\Widgets\StatsOverviewWidget;
+use App\Http\Controllers\Admin\PrescriptionDownloadController;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -13,12 +13,12 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class KelolaSamPanelProvider extends PanelProvider
@@ -36,10 +36,10 @@ class KelolaSamPanelProvider extends PanelProvider
             ->colors([
                 // Hijau sage sesuai identitas visual SAM
                 'primary' => Color::hex('#869480'),
-                'danger'  => Color::hex('#E8343B'),
+                'danger' => Color::hex('#E8343B'),
                 'success' => Color::Emerald,
                 'warning' => Color::Amber,
-                'info'    => Color::Sky,
+                'info' => Color::Sky,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -70,6 +70,11 @@ class KelolaSamPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            // File privat (resep dokter) hanya bisa diunduh admin yang login.
+            ->authenticatedRoutes(function () {
+                Route::get('resep/{appointment}', PrescriptionDownloadController::class)
+                    ->name('prescription.download');
+            });
     }
 }

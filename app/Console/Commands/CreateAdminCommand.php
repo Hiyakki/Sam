@@ -23,6 +23,7 @@ class CreateAdminCommand extends Command
         $nameValidator = Validator::make(['name' => $name], ['name' => 'required|string|min:2|max:255']);
         if ($nameValidator->fails()) {
             $this->error($nameValidator->errors()->first('name'));
+
             return self::FAILURE;
         }
 
@@ -31,6 +32,7 @@ class CreateAdminCommand extends Command
         $emailValidator = Validator::make(['email' => $email], ['email' => 'required|email|unique:users,email']);
         if ($emailValidator->fails()) {
             $this->error($emailValidator->errors()->first('email'));
+
             return self::FAILURE;
         }
 
@@ -42,24 +44,27 @@ class CreateAdminCommand extends Command
         );
         if ($passwordValidator->fails()) {
             $this->error($passwordValidator->errors()->first('password'));
+
             return self::FAILURE;
         }
 
         $passwordConfirm = $this->secret('Konfirmasi password');
         if ($password !== $passwordConfirm) {
             $this->error('Password dan konfirmasi tidak cocok.');
+
             return self::FAILURE;
         }
 
         // Konfirmasi
         if (! $this->confirm("Buat admin dengan email [{$email}]?", true)) {
             $this->warn('Dibatalkan.');
+
             return self::SUCCESS;
         }
 
         $user = User::create([
-            'name'     => $name,
-            'email'    => $email,
+            'name' => $name,
+            'email' => $email,
             'password' => Hash::make($password),
         ]);
 
