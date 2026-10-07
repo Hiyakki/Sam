@@ -2,24 +2,25 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
+     * Urutan penting: layanan dan cabang harus ada sebelum relasi/jadwal.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            ServiceSeeder::class,           // 1. Layanan (tidak bergantung apapun)
+            BranchSeeder::class,            // 2. Cabang + relasi ke layanan
+            BranchScheduleSeeder::class,    // 3. Jadwal cabang
+            ProductCategorySeeder::class,   // 4. Kategori produk
+            ProductSeeder::class,           // 5. Produk (butuh kategori)
+            SiteSettingSeeder::class,       // 6. Pengaturan situs
+            FaqSeeder::class,               // 7. FAQ
+            TestimonialSeeder::class,       // 8. Testimoni contoh
         ]);
     }
 }

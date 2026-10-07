@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\SiteSettings;
+use App\Filament\Widgets\AppointmentsTableWidget;
+use App\Filament\Widgets\StatsOverviewWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -28,10 +31,15 @@ class KelolaSamPanelProvider extends PanelProvider
             ->path('kelola-sam')
             ->login()
             ->passwordReset()
+            // Registrasi DINONAKTIFKAN — tidak ada ->registration()
             ->brandName('SAM Orthotic Prosthetic')
             ->colors([
-                'primary' => Color::Emerald,
-                'danger' => Color::Red,
+                // Hijau sage sesuai identitas visual SAM
+                'primary' => Color::hex('#869480'),
+                'danger'  => Color::hex('#E8343B'),
+                'success' => Color::Emerald,
+                'warning' => Color::Amber,
+                'info'    => Color::Sky,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -40,8 +48,14 @@ class KelolaSamPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                StatsOverviewWidget::class,
+                AppointmentsTableWidget::class,
+            ])
+            ->navigationGroups([
+                'Appointment',
+                'Katalog',
+                'Konten',
+                'Pengaturan',
             ])
             ->middleware([
                 EncryptCookies::class,
