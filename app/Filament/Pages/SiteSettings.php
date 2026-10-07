@@ -23,9 +23,9 @@ class SiteSettings extends Page implements HasForms
 
     protected static ?string $navigationLabel = 'Pengaturan Situs';
 
-    protected static ?string $navigationGroup = 'Konten';
+    protected static ?string $navigationGroup = 'Website & Konten';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $title = 'Pengaturan Situs';
 

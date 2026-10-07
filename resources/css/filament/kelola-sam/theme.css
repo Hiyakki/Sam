@@ -1,0 +1,124 @@
+/* ==========================================================================
+   Filament Theme: SAM Admin (Navy Theme)
+   Palet: Primary Navy #1E2A4A, Dark #141D36, Soft #EAF0F7, Accent #E8343B
+   ========================================================================== */
+
+/* 1. Global & Font smoothing */
+:root {
+    --sam-navy: #1E2A4A;
+    --sam-navy-dark: #141D36;
+    --sam-navy-light: #2D4875;
+    --sam-surface-soft: #EAF0F7;
+    --sam-accent: #E8343B;
+}
+
+/* 2. Brand Logo Styling */
+.fi-logo {
+    display: inline-flex;
+    align-items: center;
+}
+
+.fi-logo img {
+    height: 2.5rem;
+    max-height: 2.5rem;
+    width: auto;
+    object-fit: contain;
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+/* Di sidebar mode gelap, logo tetap jelas terbaca */
+.dark .fi-sidebar-header .fi-logo img,
+.dark .fi-simple-main .fi-logo img {
+    background-color: #ffffff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+}
+
+/* 3. Halaman Login / Auth */
+.fi-simple-layout {
+    background: linear-gradient(135deg, #F8F9FB 0%, #EAF0F7 50%, #DCE5F2 100%) !important;
+    min-height: 100vh;
+}
+
+.dark .fi-simple-layout {
+    background: linear-gradient(135deg, #0A0E1A 0%, #111827 50%, #151D2F 100%) !important;
+}
+
+.fi-simple-main {
+    border-radius: 1.25rem !important;
+    box-shadow: 0 20px 25px -5px rgba(30, 42, 74, 0.08), 0 8px 10px -6px rgba(30, 42, 74, 0.05) !important;
+    border: 1px solid rgba(30, 42, 74, 0.08) !important;
+}
+
+.dark .fi-simple-main {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.fi-simple-header-heading {
+    color: var(--sam-navy) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+}
+
+.dark .fi-simple-header-heading {
+    color: #F3F4F6 !important;
+}
+
+/* 4. Sidebar Navigasi */
+.fi-sidebar-nav {
+    padding-top: 0.5rem;
+}
+
+.fi-sidebar-group-label {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    color: #64748B !important;
+}
+
+.dark .fi-sidebar-group-label {
+    color: #94A3B8 !important;
+}
+
+.fi-sidebar-item-active .fi-sidebar-item-button {
+    background-color: rgba(30, 42, 74, 0.08) !important;
+    border-left: 3px solid var(--sam-navy) !important;
+}
+
+.dark .fi-sidebar-item-active .fi-sidebar-item-button {
+    background-color: rgba(56, 102, 170, 0.18) !important;
+    border-left: 3px solid #60A5FA !important;
+}
+
+/* 5. Tombol Primary & Aksi */
+.fi-btn-color-primary {
+    transition: all 0.15s ease-in-out !important;
+}
+
+/* 6. Form Input Focus Ring */
+input:focus, select:focus, textarea:focus {
+    --tw-ring-color: var(--sam-navy) !important;
+}
+
+.dark input:focus, .dark select:focus, .dark textarea:focus {
+    --tw-ring-color: #60A5FA !important;
+}
+
+/* 7. Kontras Mode Gelap Terjamin (Tidak ada teks navy di latar gelap) */
+.dark {
+    color-scheme: dark;
+}
+
+.dark .fi-header-heading,
+.dark .fi-ta-header-heading {
+    color: #F9FAFB !important;
+}
+
+/* 8. Badge Styling */
+.fi-badge {
+    font-weight: 600 !important;
+    letter-spacing: 0.02em !important;
+}

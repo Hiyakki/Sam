@@ -42,8 +42,8 @@ class AppointmentResource extends Resource
 
     public const STATUS_COLORS = [
         'pending' => 'warning',
-        'confirmed' => 'success',
-        'completed' => 'primary',
+        'confirmed' => 'info',
+        'completed' => 'success',
         'cancelled' => 'danger',
         'no_show' => 'gray',
     ];

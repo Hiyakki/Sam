@@ -23,13 +23,13 @@ class TestimonialResource extends Resource
 
     protected static ?string $navigationLabel = 'Testimoni';
 
-    protected static ?string $navigationGroup = 'Konten';
+    protected static ?string $navigationGroup = 'Website & Konten';
 
     protected static ?string $modelLabel = 'Testimoni';
 
     protected static ?string $pluralModelLabel = 'Testimoni';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
 
     public const CONSENT_MESSAGE = 'Testimoni tidak bisa diaktifkan sebelum izin tampil dikonfirmasi.';
 

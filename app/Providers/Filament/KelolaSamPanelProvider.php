@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
 use App\Filament\Widgets\AppointmentsTableWidget;
 use App\Filament\Widgets\StatsOverviewWidget;
 use App\Http\Controllers\Admin\PrescriptionDownloadController;
@@ -13,9 +14,11 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Vite;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
@@ -29,13 +32,32 @@ class KelolaSamPanelProvider extends PanelProvider
             ->default()
             ->id('kelola-sam')
             ->path('kelola-sam')
-            ->login()
+            ->login(Login::class)
             ->passwordReset()
             // Registrasi DINONAKTIFKAN — tidak ada ->registration()
-            ->brandName('SAM Orthotic Prosthetic')
+            ->brandName('SAM Admin')
+            ->brandLogo(fn () => asset('images/logo-sam.png'))
+            ->brandLogoHeight('2.5rem')
+            ->favicon(asset('images/logo-sam.png'))
+            ->renderHook(
+                PanelsRenderHook::STYLES_AFTER,
+                fn () => app(Vite::class)('resources/css/filament/kelola-sam/theme.css')
+            )
             ->colors([
-                // Hijau sage sesuai identitas visual SAM
-                'primary' => Color::hex('#869480'),
+                // Skala Navy turunan #1E2A4A (shade 50-950 ramah mode terang dan gelap)
+                'primary' => [
+                    50 => '240, 244, 250',
+                    100 => '224, 233, 245',
+                    200 => '195, 212, 235',
+                    300 => '155, 185, 220',
+                    400 => '105, 150, 198',
+                    500 => '65, 110, 165',
+                    600 => '30, 42, 74',     // #1E2A4A (core primary navy)
+                    700 => '24, 34, 60',     // #18223C
+                    800 => '20, 29, 54',     // #141D36 (primary-dark)
+                    900 => '15, 21, 40',     // #0F1528
+                    950 => '10, 14, 27',     // #0A0E1B
+                ],
                 'danger' => Color::hex('#E8343B'),
                 'success' => Color::Emerald,
                 'warning' => Color::Amber,
@@ -53,9 +75,9 @@ class KelolaSamPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'Appointment',
+                'Klinik & Cabang',
                 'Katalog',
-                'Konten',
-                'Pengaturan',
+                'Website & Konten',
             ])
             ->middleware([
                 EncryptCookies::class,

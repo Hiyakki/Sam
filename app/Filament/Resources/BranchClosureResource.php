@@ -14,17 +14,17 @@ class BranchClosureResource extends Resource
 {
     protected static ?string $model = BranchClosure::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+    protected static ?string $navigationIcon = 'heroicon-o-no-symbol';
 
     protected static ?string $navigationLabel = 'Hari Libur';
 
-    protected static ?string $navigationGroup = 'Pengaturan';
+    protected static ?string $navigationGroup = 'Klinik & Cabang';
 
     protected static ?string $modelLabel = 'Hari Libur';
 
     protected static ?string $pluralModelLabel = 'Hari Libur';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {

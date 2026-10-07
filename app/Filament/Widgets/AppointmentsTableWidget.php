@@ -52,8 +52,8 @@ class AppointmentsTableWidget extends BaseWidget
                     ->label('Status')
                     ->colors([
                         'warning' => 'pending',
-                        'success' => 'confirmed',
-                        'primary' => 'completed',
+                        'info' => 'confirmed',
+                        'success' => 'completed',
                         'danger' => 'cancelled',
                         'gray' => 'no_show',
                     ])
