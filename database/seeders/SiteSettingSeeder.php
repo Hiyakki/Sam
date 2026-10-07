@@ -32,10 +32,10 @@ class SiteSettingSeeder extends Seeder
             [
                 'key' => 'home.advantages',
                 'value' => json_encode([
-                    ['icon' => 'star', 'title' => 'Berpengalaman Sejak 2014', 'desc' => 'Lebih dari 10 tahun melayani pasien orthotic dan prosthetic di Indonesia.'],
-                    ['icon' => 'users', 'title' => 'Tenaga Ahli Bersertifikat', 'desc' => 'Tim ortotis prostétis berpengalaman dan berlisensi resmi.'],
-                    ['icon' => 'heart', 'title' => 'Pelayanan Personal', 'desc' => 'Setiap alat dibuat sesuai anatomi dan kebutuhan unik masing-masing pasien.'],
-                    ['icon' => 'shield', 'title' => 'Material Berkualitas', 'desc' => 'Menggunakan bahan pilihan untuk kenyamanan dan ketahanan jangka panjang.'],
+                    ['icon' => 'calendar', 'title' => 'Pengalaman Sejak 2014', 'desc' => 'Telah melayani pembuatan alat ortotik dan prostetik selama lebih dari satu dekade.'],
+                    ['icon' => 'user-check', 'title' => 'Pendekatan Kustom', 'desc' => 'Alat dibuat secara individual mengikuti pengukuran fisik dan kebutuhan gerak pasien.'],
+                    ['icon' => 'wrench', 'title' => 'Fitting & Penyesuaian', 'desc' => 'Dilakukan evaluasi dan fitting langsung sebelum alat diserahkan kepada pasien.'],
+                    ['icon' => 'sparkles', 'title' => 'Bengkel Fabrikasi Mandiri', 'desc' => 'Proses pengerjaan dan modifikasi dilakukan di fasilitas workshop sendiri.'],
                 ]),
                 'type' => 'json',
                 'group' => 'home',
@@ -44,22 +44,43 @@ class SiteSettingSeeder extends Seeder
             // === ABOUT ===
             [
                 'key' => 'about.story',
-                'value' => 'SAM Orthotic Prosthetic berdiri pada tahun 2014 dengan semangat membantu masyarakat Indonesia yang membutuhkan alat bantu gerak berkualitas. [LENGKAPI: cerita lengkap dari pemilik]',
+                'value' => '<p>SAM Orthotic Prosthetic didirikan pada tahun 2014 di Bogor dengan komitmen mendampingi para penyandang disabilitas fisik dan pasien pasca-cedera agar dapat kembali bergerak secara mandiri.</p><p>Kami fokus pada perancangan, pembuatan, serta penyesuaian alat bantu penyangga tubuh (ortosis) dan pengganti anggota gerak (prostesis). Melalui pendekatan kustom yang presisi dan proses fitting langsung, kami berupaya memastikan setiap alat yang kami hasilkan nyaman dipakai dalam aktivitas sehari-hari.</p>',
                 'type' => 'richtext',
                 'group' => 'about',
             ],
             [
                 'key' => 'about.vision',
-                'value' => 'Menjadi penyedia alat orthotic dan prosthetic terpercaya yang membantu setiap pasien menjalani kehidupan yang lebih aktif dan mandiri. [LENGKAPI]',
+                'value' => 'Menjadi pusat pembuatan alat ortotik dan prostetik kustom yang tepercaya, berorientasi pada kenyamanan pasien, dan mendukung kemandirian gerak di Indonesia.',
                 'type' => 'text',
                 'group' => 'about',
             ],
             [
                 'key' => 'about.mission',
                 'value' => json_encode([
-                    'Memberikan pelayanan orthotic dan prosthetic yang profesional, personal, dan terjangkau.',
-                    'Menggunakan material berkualitas tinggi untuk setiap alat yang dibuat.',
-                    'Terus meningkatkan kompetensi tim melalui pelatihan dan sertifikasi. [LENGKAPI]',
+                    'Menyediakan alat bantu gerak tubuh ortotik dan prostetik kustom dengan pengukuran dan fitting yang presisi.',
+                    'Memberikan konsultasi dan edukasi menyeluruh kepada pasien serta keluarga terkait perawatan alat.',
+                    'Mengutamakan kenyamanan, fungsi ergonomis, dan daya tahan alat untuk aktivitas sehari-hari.',
+                ]),
+                'type' => 'json',
+                'group' => 'about',
+            ],
+            [
+                'key' => 'about.milestones',
+                'value' => json_encode([
+                    ['year' => '2014', 'title' => 'Awal Berdiri', 'desc' => 'Memulai layanan pembuatan alat ortotik dan prostetik untuk membantu pasien bergerak mandiri.'],
+                    ['year' => '2018', 'title' => 'Pengembangan Workshop', 'desc' => 'Peningkatan kapasitas bengkel kerja dan alat fabrikasi untuk presisi fitting.'],
+                    ['year' => '2023', 'title' => 'Layanan Terpadu', 'desc' => 'Pengembangan kemudahan konsultasi berkala dan sistem reservasi janji temu pasien.'],
+                ]),
+                'type' => 'json',
+                'group' => 'about',
+            ],
+            [
+                'key' => 'about.values',
+                'value' => json_encode([
+                    ['title' => 'Fokus Pasien', 'desc' => 'Mendengarkan kebutuhan gerak pasien dan merancang alat sesuai kondisi anatomis.'],
+                    ['title' => 'Presisi Fabrikasi', 'desc' => 'Pengukuran detail dan proses cetak fitting bertahap demi kenyamanan penggunaan.'],
+                    ['title' => 'Transparan & Informatif', 'desc' => 'Memberikan penjelasan jelas mengenai fungsi, penggunaan, serta perawatan alat.'],
+                    ['title' => 'Pendampingan Berkelanjutan', 'desc' => 'Mendukung penyesuaian atau evaluasi alat bila terdapat perubahan kondisi fisik pasien.'],
                 ]),
                 'type' => 'json',
                 'group' => 'about',

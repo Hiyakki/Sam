@@ -48,6 +48,8 @@ class SiteSettings extends Page implements HasForms
         'about_story' => ['about.story', 'richtext', 'about'],
         'about_vision' => ['about.vision', 'text', 'about'],
         'about_mission' => ['about.mission', 'json', 'about'],
+        'about_milestones' => ['about.milestones', 'json', 'about'],
+        'about_values' => ['about.values', 'json', 'about'],
         'about_team' => ['about.team', 'json', 'about'],
 
         'contact_whatsapp' => ['contact.whatsapp', 'text', 'contact'],
@@ -144,6 +146,29 @@ class SiteSettings extends Page implements HasForms
                                 ->simple(Forms\Components\TextInput::make('text')->required()->maxLength(300))
                                 ->reorderable()
                                 ->addActionLabel('Tambah misi'),
+                            Forms\Components\Repeater::make('about_milestones')
+                                ->label('Tonggak Perjalanan (Milestones)')
+                                ->schema([
+                                    Forms\Components\TextInput::make('year')->label('Tahun')->required()->maxLength(10),
+                                    Forms\Components\TextInput::make('title')->label('Judul Peristiwa')->required()->maxLength(100),
+                                    Forms\Components\Textarea::make('desc')->label('Deskripsi')->rows(2)->maxLength(250),
+                                ])
+                                ->columns(3)
+                                ->reorderable()
+                                ->collapsible()
+                                ->itemLabel(fn (array $state) => ($state['year'] ?? '').' - '.($state['title'] ?? ''))
+                                ->addActionLabel('Tambah tonggak perjalanan'),
+                            Forms\Components\Repeater::make('about_values')
+                                ->label('Nilai & Prinsip Layanan')
+                                ->schema([
+                                    Forms\Components\TextInput::make('title')->label('Nilai')->required()->maxLength(80),
+                                    Forms\Components\Textarea::make('desc')->label('Deskripsi')->rows(2)->maxLength(250),
+                                ])
+                                ->columns(2)
+                                ->reorderable()
+                                ->collapsible()
+                                ->itemLabel(fn (array $state) => $state['title'] ?? null)
+                                ->addActionLabel('Tambah nilai layanan'),
                             Forms\Components\Repeater::make('about_team')
                                 ->label('Tim')
                                 ->schema([

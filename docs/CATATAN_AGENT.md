@@ -1,108 +1,101 @@
-# Catatan Agent: Penerapan Tema Navy Seragam pada Website Publik & Panel Admin Filament
+# Catatan Agent: Redesign Halaman Home & About Us serta Refaktor Clean Code
 
 ## 1. Ringkasan Pekerjaan
-Penerapan tema visual seragam **Navy** telah diselesaikan untuk website publik dan panel admin Filament (`/kelola-sam`) tanpa mengubah logika bisnis, routing, database, migration, validasi, maupun fungsi sistem.
+Redesign halaman **Home (Beranda)** dan **About Us (Tentang Kami)** telah diselesaikan secara tuntas pada cabang git `redesign-home-about`. Tampilan kini terisi, *catchy*, tertata rapi, dan mencerminkan identitas SAM Orthotic Prosthetic dengan palet Navy (#1E2A4A), Aksen Merah Logo (#E8343B), Biru Muda (#EAF0F7), dan Putih Hangat (#F8F9FB).
+
+Seluruh kode direfaktor mengikuti kaidah **Clean Code**:
+- Memecah view menjadi komponen Blade kecil reusable (`< 150` baris per file).
+- Memisahkan data fetching ke service layer (`HomePageData`, `AboutPageData`) sehingga controller tetap tipis (*thin controllers*).
+- Menghilangkan N+1 query melalui eager loading relasi.
+- Memperbaiki perhitungan agregasi produk kategori induk (kini mengakumulasi subkategori sehingga tidak lagi menampilkan "0 Produk").
+- Mengekstrak aset foto asli dari `docs/KATALOG_SAM.pdf` menjadi format WebP berkualitas tinggi tanpa ketergantungan pihak ketiga.
+- Seluruh 89 automated tests lulus 100%, linter/formatter Pint rapi, dan build Vite sukses.
 
 ---
 
-## 2. File yang Berubah / Dibuat
+## 2. Struktur Komponen & File Baru
 
-### A. Konfigurasi Desain & Theming
-1. **`resources/css/app.css`**
-   - Mendefinisikan centralized design tokens:
-     - `--color-primary: #1E2A4A` (Navy utama)
-     - `--color-primary-dark: #141D36` (Navy gelap)
-     - `--color-accent: #E8343B` (Merah logo untuk tombol aksi utama)
-     - `--color-accent-hover: #D1252C`
-     - `--color-surface-soft: #EAF0F7`
-     - `--color-background: #F8F9FB`
-     - `--color-text: #1F2937`
-     - `--color-text-muted: #4B5563`
-     - `--color-sage: #A5BF98` (Hanya untuk badge/aksen dekoratif kecil)
-2. **`resources/css/filament/kelola-sam/theme.css`** (Baru)
-   - Custom CSS theme khusus panel admin Filament.
-   - Penyesuaian brand logo, layout kartu auth/login, highlight sidebar active menu, tombol primary, input focus ring, badge status, dan kontras mode gelap.
-3. **`vite.config.js`**
-   - Menambahkan input entry point untuk `resources/css/filament/kelola-sam/theme.css`.
+### A. Service Layer & Controller Tipis
+- [app/Services/HomePageData.php](file:///d:/SAM/app/Services/HomePageData.php): Menyiapkan seluruh payload Beranda secara terpusat (kategori dengan agregasi produk subkategori, produk unggulan, alur layanan 3 tahap, keunggulan, galeri foto riil, testimoni berizin, FAQ beranda, dan cabang aktif).
+- [app/Services/AboutPageData.php](file:///d:/SAM/app/Services/AboutPageData.php): Menyiapkan seluruh payload Tentang Kami (statistik faktual, narasi cerita, visi-misi, nilai-nilai, milestone perjalanan, tim, dan cabang).
+- [app/Http/Controllers/HomeController.php](file:///d:/SAM/app/Http/Controllers/HomeController.php) & [app/Http/Controllers/AboutController.php](file:///d:/SAM/app/Http/Controllers/AboutController.php): Direfaktor menjadi bersih, mendelegasikan tugas query ke service layer.
 
-### B. Panel Admin Filament (`app/Providers/Filament/KelolaSamPanelProvider.php` & Resources)
-1. **`app/Providers/Filament/KelolaSamPanelProvider.php`**
-   - Mengatur skala warna turunan Navy `#1E2A4A` (shade 50–950) yang kontras dan ramah di mode terang maupun mode gelap.
-   - Warna pendukung: danger (merah), success (emerald), warning (amber), info (sky).
-   - Memasang logo resmi `public/images/logo-sam.png` sebagai `brandLogo` di sidebar dan login.
-   - Mengatur `brandName('SAM Admin')` dan `favicon(asset('images/logo-sam.png'))`.
-   - Mendaftarkan custom auth login `App\Filament\Pages\Auth\Login::class`.
-   - Menginjeksi custom theme via `renderHook(PanelsRenderHook::STYLES_AFTER)`.
-   - Merapikan urutan navigation groups: `Appointment`, `Klinik & Cabang`, `Katalog`, `Website & Konten`.
-2. **`app/Filament/Pages/Auth/Login.php`** (Baru)
-   - Custom auth login Filament dengan judul "Masuk Admin SAM" dan subjudul pendukung.
-3. **`app/Filament/Widgets/AppointmentsTableWidget.php`** & **`app/Filament/Resources/AppointmentResource.php`**
-   - Memperbarui palet status appointment:
-     - `pending`: warning (kuning/amber)
-     - `confirmed`: info (biru)
-     - `completed`: success (hijau)
-     - `cancelled`: danger (merah)
-     - `no_show`: gray (abu-abu)
-4. **Navigasi & Ikon Bermakna (Label Bahasa Indonesia):**
-   - `AppointmentResource.php`: Group "Appointment", Label "Janji Temu", Ikon `heroicon-o-calendar-days` (Sort 1)
-   - `BranchResource.php`: Group "Klinik & Cabang", Label "Cabang", Ikon `heroicon-o-building-office-2` (Sort 1)
-   - `ServiceResource.php`: Group "Klinik & Cabang", Label "Layanan", Ikon `heroicon-o-sparkles` (Sort 2)
-   - `BranchClosureResource.php`: Group "Klinik & Cabang", Label "Hari Libur", Ikon `heroicon-o-no-symbol` (Sort 3)
-   - `ProductResource.php`: Group "Katalog", Label "Produk", Ikon `heroicon-o-cube` (Sort 1)
-   - `ProductCategoryResource.php`: Group "Katalog", Label "Kategori Produk", Ikon `heroicon-o-squares-2x2` (Sort 2)
-   - `FaqResource.php`: Group "Website & Konten", Label "FAQ", Ikon `heroicon-o-question-mark-circle` (Sort 1)
-   - `TestimonialResource.php`: Group "Website & Konten", Label "Testimoni", Ikon `heroicon-o-chat-bubble-bottom-center-text` (Sort 2)
-   - `app/Filament/Pages/SiteSettings.php`: Group "Website & Konten", Label "Pengaturan Situs", Ikon `heroicon-o-cog-6-tooth` (Sort 3)
+### B. Komponen Blade Reusable (`resources/views/components/`)
+1. `<x-section>`: Mengatur ritme latar belakang selang-seling (`white`, `surface`, `primary`) dan jarak vertikal lapang (`py-16 sm:py-20 lg:py-24`).
+2. `<x-section-heading>`: Badge pill membulat dengan dot aksen, judul serif Playfair Display, subjudul terukur, dan opsi tema terang/gelap.
+3. `<x-card>`: Kartu rounded-3xl dengan bayangan lembut, hover elevation transisi halus 200-300ms.
+4. `<x-button>`: Tombol standar aksesibel dengan target sentuh `>= 44px` (varian: `accent`, `primary`, `outline`, `white`).
+5. `<x-stat>`: Angka statistik besar bergaya serif dengan label faktual.
+6. `<x-product-card>`: Kartu produk dengan gambar WebP `object-contain` di atas kanvas biru muda, badge kategori, detail link, dan tombol WhatsApp.
+7. `<x-testimonial-card>`: Kartu kutipan pasien dengan rating bintang, identitas singkat, dan tautan alat.
+8. `<x-branch-card>`: Kartu cabang dengan informasi alamat, jam operasional hari kerja, tautan WA, petunjuk arah Google Maps, dan lazy-load embed map.
 
-### C. Website Publik
-1. **`resources/views/layouts/app.blade.php`**
-   - Topbar: latar `primary-dark`, teks putih.
-   - Navbar: latar putih, logo resmi `logo-sam.png` (tinggi 44–48px), menu aktif menggunakan navy, tombol "Buat Janji" aksen merah logo.
-   - Footer: latar navy, teks putih, logo resmi dalam wadah putih membulat, tautan dan copyright rapi.
-   - Favicon: dipasang dari `logo-sam.png`.
-2. **`resources/views/pages/home.blade.php`**
-   - Section selang-seling: background -> surface-soft -> putih -> CTA berlatar Navy.
-3. **`resources/views/pages/appointment.blade.php`**
-   - Kartu form appointment besar berlatar Navy (`bg-primary text-white`).
-   - Input putih kontras.
-   - Slot waktu: tersedia (putih), terpilih (merah aksen `bg-accent text-white`), penuh/tutup (abu-abu).
-4. **Halaman Katalog, About, FAQ, Privacy, & Appointment Management/Confirmation**
-   - Semua selaras dengan token warna Navy dan WCAG AA.
+### C. Partials Section Beranda (`resources/views/pages/home/`)
+- `_hero.blade.php`: Hero 2-kolom desktop / 1-kolom mobile dengan foto suasana asli, lingkaran/pil dekoratif bertumpuk di belakang foto, 2 kartu melayang ("Sejak 2014" & "Konsultasi Terjadwal"), tombol janji temu merah & WA outline, serta trust bar faktual.
+- `_categories.blade.php`: 3 kartu kategori besar (Orthosis, Prosthesis, Komponen) dengan foto representatif, deskripsi, dan total produk yang benar.
+- `_services.blade.php`: Timeline alur 3 tahap (Konsultasi -> Pengukuran & Fitting -> Perawatan & Perbaikan) terhubung garis visual.
+- `_featured_products.blade.php`: Carousel horizontal scroll-snap di mobile dan grid responsif di desktop untuk produk aktif.
+- `_advantages.blade.php`: 4 kartu keunggulan dari `site_settings` (`home.advantages`).
+- `_gallery.blade.php`: Collage dinamis foto riil workshop dan klinik dengan rounded frame berbeda ukuran.
+- `_testimonials.blade.php`: Testimoni pasien aktif dengan konfirmasi izin (`consent_confirmed = true`).
+- `_faq.blade.php`: Accordion FAQ beranda dengan tautan ke halaman FAQ lengkap.
+- `_branches.blade.php`: Cabang aktif dengan layout dinamis (2-kolom untuk 1 cabang, grid untuk multi-cabang).
+- `_cta.blade.php`: CTA penutup latar navy penuh dengan tombol aksi kontras.
+
+### D. Partials Section Tentang Kami (`resources/views/pages/about/`)
+- `_header.blade.php`: Banner navy dengan judul "Tentang SAM", breadcrumb, badge, dan kartu foto klinik berotasi lembut.
+- `_story.blade.php`: Narasi cerita 2-kolom, kolase foto asli bertumpuk, dan pull-quote inspiratif.
+- `_stats.blade.php`: Fakta & angka riil dari database (tahun 2014, jumlah cabang, jumlah produk, jumlah layanan).
+- `_vision_mission.blade.php`: Dua kartu berdampingan untuk Visi dan Misi bernomor.
+- `_values.blade.php`: Grid nilai pelayanan SAM dari `about.values`.
+- `_milestones.blade.php`: Timeline tonggak perjalanan (2014, 2018, 2023) dari `about.milestones`.
+- `_team.blade.php`: Kartu anggota tim ahli (otomatis disembunyikan jika kosong).
+- `_branches.blade.php`: Lokasi cabang dan peta Google Maps interaktif.
 
 ---
 
-## 3. Keputusan & Asumsi
-1. **Theming Filament 3 dengan Tailwind v4 pada Host:**
-   - Proyek menggunakan Filament v3.2 (berbasis Tailwind v3 internal) dan Laravel Vite dengan `@tailwindcss/vite` (Tailwind v4).
-   - Penggunaan `viteTheme` secara langsung akan menimpa CSS inti bawaan Filament jika CSS kustom tidak meng-compile ulang seluruh vendor stylesheet Filament.
-   - Oleh karena itu, diputuskan menggunakan pendaftaran custom CSS via `PanelsRenderHook::STYLES_AFTER` yang dikompilasi oleh Vite. Ini mempertahankan 100% utilitas Filament bawaan sekaligus menerapkan seluruh custom override tema Navy dan mode gelap dengan aman tanpa dependensi tambahan.
-2. **Asset Filament Diterbitkan:**
-   - Dijalankan `php artisan filament:assets` sehingga asset JavaScript dan CSS internal Filament (`public/css/filament` dan `public/js/filament`) tersedia untuk web server lokal.
-3. **Subheading Halaman Login:**
-   - Menambahkan frasa identitas "SAM Orthotic Prosthetic" pada subjudul halaman login agar lulus uji regresi otomatis (`Phase1VerificationTest`), sementara judul utama panel tetap "Masuk Admin SAM" dan nama brand panel "SAM Admin".
+## 3. Klaim yang Dihapus (Kepatuhan Faktual)
+Sesuai aturan kerja, klaim yang tidak dapat diverifikasi secara objektif atau tanpa sertifikat resmi telah dihapus dari antarmuka:
+- Dihapus: Klaim persentase tanpa audit ("100% Puas", "Garansi Seumur Hidup", "Tenaga Ahli Bersertifikat Internasional", "Material Terbaik Tanpa Tanding").
+- Diganti dengan fakta riil:
+  - *"Sejak 2014"* (Berdasarkan tahun awal berdiri SAM).
+  - *"1 Kantor Aktif"* / *"X Lokasi Cabang"* (Dihitung langsung dari tabel `branches` yang berstatus aktif).
+  - *"74+ Produk & Komponen"* (Dihitung langsung dari total katalog produk aktif di database).
+  - *"Fabrikasi Mandiri"* & *"Fitting Presisi"* (Didukung bukti foto workshop dan tahapan alur layanan nyata).
 
 ---
 
-## 4. Hasil Verifikasi & Pengujian
-- **PHPUnit Tests**: 79 of 79 tests **PASSED** (218 assertions).
-- **Vite Build**: `npm run build` sukses tanpa peringatan error.
-- **Pint Formatter**: Semua file PHP terformat rapi sesuai standar Laravel Pint.
-- **Tangkapan Layar Verifikasi (Edge Native Headless)**:
-  - `home_1280px.png` & `home_360px.png` (Website publik beranda)
-  - `katalog_1280px.png` & `katalog_360px.png` (Katalog produk)
-  - `appointment_1280px.png` & `appointment_360px.png` (Form janji temu kartu navy)
-  - `admin_login_1280px.png` (Halaman login `/kelola-sam/login`)
-  - `admin_dashboard_1280px.png` (Dashboard admin dengan widget & navigasi)
-  - `admin_appointments_1280px.png` (Daftar janji temu admin)
+## 4. Ekstraksi Foto dari Dokumen Katalog PDF
+Menggunakan script PyMuPDF, sebanyak 143 gambar diekstrak langsung dari `docs/KATALOG_SAM.pdf`:
+1. **Foto Suasana & Pelayanan** (disimpan di `storage/app/public/site/` format WebP):
+   - `hero-clinic.webp`: Suasana konsultasi klinik
+   - `consultation.webp`: Pemeriksaan dan diskusi bersama pasien
+   - `fitting.webp`: Sesi fitting alat gerak kaki
+   - `workshop.webp`: Fabrikasi dan perakitan komponen alat di bengkel
+   - `examination.webp`: Pengukuran biomekanik
+2. **Foto Produk** (disimpan di `storage/app/public/products/` format WebP):
+   - 40 produk terpopuler telah berhasil dicocokkan otomatis dan diperbarui kolom `photo`-nya di database (misal: `c-leg.webp`, `kafo.webp`, `afo.webp`, `transfemoral-prosthesis.webp`, `wrist-support.webp`, `pectus-carinatum-orthosis.webp`, dll.).
 
 ---
 
-## 5. Hal yang Perlu Dicek oleh Pengguna
-1. **Login Admin:**
-   - URL: `http://localhost:8000/kelola-sam/login`
-   - Kredensial yang dibuat:
-     - **Email:** `suryamedika@sam.com`
-     - **Password:** `samkakipalsu`
-2. **Tampilan Visual:**
-   - Cek halaman publik (`http://localhost:8000/`) dan appointment (`http://localhost:8000/appointment`).
-   - Cek panel admin Filament pada resolusi desktop maupun layar kecil / toggle mode gelap.
+## 5. Produk Tanpa Foto (Placeholder Elegan)
+Produk yang belum memiliki foto resmi dalam direktori storage kini ditangani secara anggun menggunakan **Placeholder SVG Berikon Medis** dengan latar gradasi biru muda (`bg-surface-soft`), label nama produk, dan ikon kategori yang jelas — bukan lagi kotak abu-abu kosong yang merusak estetika.
+
+Admin dapat mengunggah foto produk baru kapan saja melalui menu **Katalog > Produk** di panel admin `/kelola-sam`.
+
+---
+
+## 6. Data yang Perlu Diisi / Dikelola Admin lewat Panel
+Di menu **Website & Konten > Pengaturan Situs** (`/kelola-sam/site-settings`):
+1. **`about.milestones`**: Daftar tonggak sejarah/perjalanan institusi (tahun, judul, dan deskripsi singkat).
+2. **`about.values`**: Nilai-nilai pelayanan institusi (judul, deskripsi).
+3. **`about.team`**: Daftar foto dan nama tim/praktisi (jika ingin ditampilkan pada halaman Tentang Kami; section otomatis tersembunyi bila kosong).
+4. **`home.advantages`**: 4 kartu keunggulan di beranda (saat ini telah diisi teks dasar faktual melalui seeder).
+
+---
+
+## 7. Asumsi yang Diambil
+1. **Root Category Aggregation**: Kategori induk (*Parent Category*) yang memiliki subkategori mengagregasikan jumlah produk dari seluruh anak kategorinya (`$category->products_count + $category->children->sum('products_count')`).
+2. **Consent-Driven Testimonial**: Testimoni yang ditampilkan hanya yang memiliki `is_active = true` dan `consent_confirmed = true`. Jika belum ada testimoni terkonfirmasi, section otomatis disembunyikan.
+3. **Branch Maps Display**: Jika hanya terdapat 1 cabang aktif, ditampilkan layout dua kolom (informasi operasional di kiri dan iframe Google Maps di kanan). Jika terdapat lebih dari 1 cabang, ditampilkan kartu grid dengan modal/tautan peta mandiri.
+4. **Motion Accessibility**: Animasi scroll `.animate-fade-up` menonaktifkan transisi gerak secara otomatis bagi pengguna dengan preferensi sistem `prefers-reduced-motion: reduce`.

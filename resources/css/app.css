@@ -39,3 +39,17 @@ body {
 h1, h2, h3, .font-heading {
     font-family: var(--font-serif);
 }
+
+/* Scroll fade-up animations respecting prefers-reduced-motion */
+@media (prefers-reduced-motion: no-preference) {
+    .animate-fade-up {
+        opacity: 0;
+        transform: translateY(16px);
+        transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: opacity, transform;
+    }
+    .animate-fade-up.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
