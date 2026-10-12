@@ -14,6 +14,10 @@ Artisan::command('inspire', function () {
 |--------------------------------------------------------------------------
 */
 
+Schedule::command('appointment:send-daily-summary')
+    ->dailyAt('07:30')
+    ->timezone('Asia/Jakarta');
+
 Schedule::command('appointment:send-reminders')
     ->dailyAt('08:00')
     ->timezone('Asia/Jakarta');

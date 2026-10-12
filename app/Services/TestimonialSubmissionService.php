@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Mail\TestimonialPendingAdminMail;
+use App\Models\SiteSetting;
 use App\Models\Testimonial;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class TestimonialSubmissionService
 {
@@ -31,7 +34,12 @@ class TestimonialSubmissionService
             'consent_confirmed' => $data['consent_confirmed'] ?? false,
         ]);
 
-        // Send email notification (dummy/log for now as email to admin needs to be implemented properly, or we can just log if no Mailable exists yet)
+        // Kirim email notifikasi ke admin jika email terkonfigurasi
+        $adminEmail = SiteSetting::get('company.email', config('mail.from.address'));
+        if (filled($adminEmail)) {
+            Mail::to($adminEmail)->queue(new TestimonialPendingAdminMail($testimonial));
+        }
+
         Log::info("Testimoni baru dari {$testimonial->name} menunggu persetujuan.");
 
         return $testimonial;
