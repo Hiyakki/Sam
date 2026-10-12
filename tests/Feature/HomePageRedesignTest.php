@@ -71,6 +71,7 @@ class HomePageRedesignTest extends TestCase
             'role_or_info' => 'Pengguna Prosthesis',
             'content' => 'Pelayanan sangat memuaskan dan presisi.',
             'rating' => 5,
+            'status' => 'approved',
             'is_active' => true,
             'consent_confirmed' => true,
             'sort_order' => 1,

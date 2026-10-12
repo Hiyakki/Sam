@@ -272,9 +272,9 @@ class Phase6AppointmentFormTest extends TestCase
         $response->assertSee('Bambang Tri');
         // Tidak boleh ada tombol kelola / ubah / batal untuk pasien
         $response->assertDontSee('Ubah Jadwal');
-        $response->assertDontSee('Batalkan Janji');
-        // Harus ada tombol / info kontak WA cabang
-        $response->assertSee('Konfirmasi via WhatsApp');
+        // Harus ada teks info kontak WA cabang (tanpa tombol aksi untuk pasien)
+        $response->assertSee('Untuk perubahan atau pembatalan, silakan hubungi admin kami');
+        $response->assertSee('WhatsApp Cabang:');
     }
 
     public function test_honeypot_rejects_bot_submissions(): void

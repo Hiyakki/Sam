@@ -529,7 +529,7 @@ class AppointmentResource extends Resource
         $branch = $record->branch?->name ?? 'SAM Orthotic Prosthetic';
 
         return match ($type) {
-            'reminder' => "Halo {$record->patient_name}, kami mengingatkan kembali jadwal janji temu Anda di {$branch} pada {$date} pukul {$time} WIB. Mohon hadir 10 menit lebih awal. Terima kasih!",
+            'reminder' => "Halo {$record->patient_name}, kami mengingatkan kembali jadwal janji temu Anda di {$branch} (Kode: {$record->code}) pada {$date} pukul {$time} WIB. Mohon hadir 10 menit lebih awal. Terima kasih!",
             'reschedule' => "Halo {$record->patient_name}, mengenai janji temu Anda di {$branch} (Kode: {$record->code}), jadwal kunjungan Anda disesuaikan menjadi {$date} pukul {$time} WIB. Mohon konfirmasi kesediaan waktu Anda. Terima kasih!",
             'cancel' => "Halo {$record->patient_name}, janji temu Anda di {$branch} (Kode: {$record->code}) telah dibatalkan. Silakan hubungi kami jika Anda memerlukan jadwal konsultasi pengganti. Terima kasih!",
             default => "Halo {$record->patient_name}, janji temu Anda di {$branch} pada {$date} pukul {$time} WIB telah kami konfirmasi. Silakan datang sesuai jadwal.",
