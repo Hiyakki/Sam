@@ -123,4 +123,15 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Data Retention (Bulan)
+    |--------------------------------------------------------------------------
+    |
+    | Menentukan batas usia penyimpanan data janji temu sebelum resep dihapus
+    | dan data identitas pasien dianonimkan secara otomatis (default: 24 bulan).
+    |
+    */
+    'data_retention_months' => (int) env('DATA_RETENTION_MONTHS', 24),
+
 ];

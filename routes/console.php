@@ -17,3 +17,9 @@ Artisan::command('inspire', function () {
 Schedule::command('appointment:send-reminders')
     ->dailyAt('08:00')
     ->timezone('Asia/Jakarta');
+
+Schedule::command('sam:purge-old-data')
+    ->weekly()
+    ->sundays()
+    ->at('02:00')
+    ->timezone('Asia/Jakarta');
