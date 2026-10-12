@@ -38,20 +38,20 @@ class FonnteSender implements WhatsAppSender
                     'countryCode' => '62',
                 ]);
 
+            $maskedPhone = strlen($normalizedPhone) > 6 ? substr($normalizedPhone, 0, 4).'****'.substr($normalizedPhone, -2) : '****';
+
             if ($response->successful()) {
-                Log::info("WhatsApp Fonnte: Berhasil mengirim pesan ke {$normalizedPhone}");
+                Log::info("WhatsApp Fonnte: Berhasil mengirim pesan ke {$maskedPhone}");
 
                 return true;
             }
 
-            Log::warning("WhatsApp Fonnte: Gagal mengirim pesan ke {$normalizedPhone}. Status: {$response->status()}, Body: {$response->body()}");
+            Log::warning("WhatsApp Fonnte: Gagal mengirim pesan ke {$maskedPhone}. Status: {$response->status()}");
 
             return false;
         } catch (Throwable $e) {
             // Fail-safe mutlak: jangan pernah menggagalkan alur aplikasi
-            Log::error("WhatsApp Fonnte Exception: {$e->getMessage()}", [
-                'target' => $normalizedPhone,
-            ]);
+            Log::error("WhatsApp Fonnte Exception: {$e->getMessage()}");
 
             return false;
         }

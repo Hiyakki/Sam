@@ -12,7 +12,8 @@ class NullSender implements WhatsAppSender
      */
     public function send(string $to, string $message): bool
     {
-        Log::info("WhatsApp NullSender: Pesan ke {$to} disimulasikan: {$message}");
+        $masked = strlen($to) > 6 ? substr($to, 0, 4).'****'.substr($to, -2) : '****';
+        Log::info("WhatsApp NullSender: Pesan disimulasikan ke {$masked} (panjang: ".strlen($message).' karakter)');
 
         return true;
     }

@@ -54,6 +54,7 @@ class StoreAppointmentRequest extends FormRequest
             'appointment_date.date_format' => 'Format tanggal tidak sesuai (YYYY-MM-DD).',
             'start_time.required' => 'Silakan pilih slot waktu kedatangan.',
             'prescription.mimes' => 'File resep dokter harus berformat PDF, JPG, JPEG, atau PNG.',
+            'prescription.mimetypes' => 'Format MIME file resep tidak valid. Hanya file gambar (JPG, PNG) atau dokumen PDF asli yang diperbolehkan.',
             'prescription.max' => 'Ukuran file resep dokter maksimal 5 MB.',
             'privacy_consent.accepted' => 'Anda harus menyetujui kebijakan privasi sebelum melanjutkan reservasi.',
             'website_hp.max' => 'Terjadi kesalahan validasi anti-spam.',
