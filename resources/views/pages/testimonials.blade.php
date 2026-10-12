@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Testimoni Pasien - SAM Orthotic Prosthetic')
+@section('meta_description', 'Cerita dan testimoni nyata pasien pengguna kaki palsu, tangan palsu, dan brace medis kustom dari SAM Orthotic Prosthetic.')
 
 @section('content')
 <section class="py-16 md:py-24 bg-surface-soft min-h-screen">

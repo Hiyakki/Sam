@@ -13,17 +13,25 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>@yield('title', $siteName . ' - Solusi Alat Bantu Gerak Terpercaya Sejak 2014')</title>
     <meta name="description" content="@yield('meta_description', 'Layanan pembuatan alat orthotic (penyangga/brace) dan prosthetic (kaki dan tangan palsu) berkualitas dengan fitting presisi dan tenaga ahli berpengalaman sejak 2014.')">
+    <link rel="canonical" href="@yield('canonical_url', url()->current())">
     <link rel="icon" type="image/png" href="{{ asset('images/logo-sam.png') }}">
 
     <!-- Open Graph / Meta Social -->
     <meta property="og:title" content="@yield('title', $siteName . ' - Solusi Alat Bantu Gerak Terpercaya Sejak 2014')">
     <meta property="og:description" content="@yield('meta_description', 'Layanan pembuatan alat orthotic (penyangga/brace) dan prosthetic (kaki dan tangan palsu) berkualitas dengan fitting presisi dan tenaga ahli berpengalaman sejak 2014.')">
     <meta property="og:type" content="@yield('og_type', 'website')">
-    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:url" content="@yield('canonical_url', url()->current())">
     <meta property="og:site_name" content="{{ $siteName }}">
-    @hasSection('og_image')
-        <meta property="og:image" content="@yield('og_image')">
-    @endif
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:image" content="@yield('og_image', asset('images/logo-sam.png'))">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', $siteName . ' - Solusi Alat Bantu Gerak Terpercaya Sejak 2014')">
+    <meta name="twitter:description" content="@yield('meta_description', 'Layanan pembuatan alat orthotic (penyangga/brace) dan prosthetic (kaki dan tangan palsu) berkualitas dengan fitting presisi dan tenaga ahli berpengalaman sejak 2014.')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/logo-sam.png'))">
+
+    @stack('schema')
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

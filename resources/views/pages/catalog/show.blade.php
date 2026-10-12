@@ -2,6 +2,10 @@
 
 @section('title', $product->name . ' - SAM Orthotic Prosthetic')
 @section('meta_description', Str::limit(strip_tags($product->function ?: $product->description ?: 'Detail alat bantu gerak kustom ' . $product->name), 160))
+@if($product->photo)
+    @section('og_image', Storage::disk('public')->url($product->photo))
+@endif
+@section('og_type', 'product')
 
 @section('content')
 <!-- Breadcrumbs -->
@@ -247,4 +251,27 @@
         @endif
     </div>
 </div>
+
+{{-- Schema.org JSON-LD Product --}}
+<script type="application/ld+json">
+{!! json_encode([
+    '@'.'context' => 'https://schema.org',
+    '@'.'type' => 'Product',
+    'name' => $product->name,
+    'description' => Str::limit(strip_tags($product->function ?: $product->description ?: $product->name), 250),
+    'image' => $product->photo ? [Storage::disk('public')->url($product->photo)] : [asset('images/logo-sam.png')],
+    'category' => $product->category?->name,
+    'brand' => [
+        '@'.'type' => 'Brand',
+        'name' => 'SAM Orthotic Prosthetic',
+    ],
+    'offers' => [
+        '@'.'type' => 'Offer',
+        'url' => url()->current(),
+        'priceCurrency' => 'IDR',
+        'availability' => 'https://schema.org/InStock',
+        'itemCondition' => 'https://schema.org/NewCondition',
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+</script>
 @endsection

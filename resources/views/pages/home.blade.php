@@ -33,39 +33,56 @@
     {{-- 10. CTA Penutup (Section navy penuh dengan tombol aksi) --}}
     @include('pages.home._cta')
 
-    {{-- Schema.org JSON-LD Structured Data --}}
+    {{-- Schema.org JSON-LD Structured Data: MedicalBusiness & LocalBusiness per Cabang --}}
+    @php
+        $graph = [
+            [
+                '@'.'type' => 'MedicalBusiness',
+                '@'.'id' => url('/') . '#organization',
+                'name' => $settings['general.site_name'] ?? 'SAM Orthotic Prosthetic',
+                'url' => url('/'),
+                'logo' => asset('images/logo-sam.png'),
+                'description' => 'Layanan klinis dan fabrikasi alat bantu gerak tubuh ortotik prostetik kustom presisi tinggi sejak 2014.',
+                'telephone' => $settings['company.whatsapp'] ?? '+6281234567890',
+                'email' => $settings['company.email'] ?? 'info@sam-orthotic.com',
+                'address' => [
+                    '@'.'type' => 'PostalAddress',
+                    'streetAddress' => $settings['company.address'] ?? 'Indonesia',
+                    'addressCountry' => 'ID',
+                ],
+                'medicalSpecialty' => ['Orthotics', 'Prosthetics'],
+            ],
+        ];
+
+        if (isset($branches) && $branches->isNotEmpty()) {
+            foreach ($branches as $branch) {
+                $branchItem = [
+                    '@'.'type' => 'LocalBusiness',
+                    '@'.'id' => url('/') . '#branch-' . $branch->slug,
+                    'name' => ($settings['general.site_name'] ?? 'SAM Orthotic Prosthetic') . ' - Cabang ' . $branch->name,
+                    'url' => url('/'),
+                    'telephone' => $branch->phone_wa ?: ($settings['company.whatsapp'] ?? '+6281234567890'),
+                    'address' => [
+                        '@'.'type' => 'PostalAddress',
+                        'streetAddress' => $branch->address,
+                        'addressCountry' => 'ID',
+                    ],
+                ];
+                if ($branch->latitude && $branch->longitude) {
+                    $branchItem['geo'] = [
+                        '@'.'type' => 'GeoCoordinates',
+                        'latitude' => (float) $branch->latitude,
+                        'longitude' => (float) $branch->longitude,
+                    ];
+                }
+                $graph[] = $branchItem;
+            }
+        }
+    @endphp
     <script type="application/ld+json">
     {!! json_encode([
-        '@context' => 'https://schema.org',
-        '@type' => 'MedicalBusiness',
-        'name' => $settings['general.site_name'] ?? 'SAM Orthotic Prosthetic',
-        'url' => url('/'),
-        'description' => 'Layanan klinis dan fabrikasi alat bantu gerak tubuh ortotik prostetik kustom presisi tinggi sejak 2014.',
-        'telephone' => $settings['company.whatsapp'] ?? '+6281234567890',
-        'email' => $settings['company.email'] ?? 'info@sam-orthotic.com',
-        'address' => [
-            '@type' => 'PostalAddress',
-            'streetAddress' => $settings['company.address'] ?? 'Indonesia',
-            'addressCountry' => 'ID',
-        ],
-        'medicalSpecialty' => [
-            'Orthotics',
-            'Prosthetics',
-        ],
-        'availableService' => [
-            [
-                '@type' => 'MedicalProcedure',
-                'name' => 'Pembuatan Kaki Palsu & Tangan Palsu Kustom',
-            ],
-            [
-                '@type' => 'MedicalProcedure',
-                'name' => 'Pembuatan Brace & Penyangga Tubuh (Orthosis)',
-            ],
-            [
-                '@type' => 'MedicalProcedure',
-                'name' => 'Pemeriksaan Biomekanik & Sesi Fitting Alat',
-            ],
-        ],
-    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}
+        '@'.'context' => 'https://schema.org',
+        '@'.'graph' => $graph,
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
     </script>
 @endsection

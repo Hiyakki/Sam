@@ -135,4 +135,32 @@
         </div>
     </div>
 </div>
+
+{{-- Schema.org JSON-LD FAQPage --}}
+@php
+    $faqEntities = [];
+    if (isset($groupedFaqs)) {
+        foreach ($groupedFaqs as $cat => $faqs) {
+            foreach ($faqs as $item) {
+                $faqEntities[] = [
+                    '@'.'type' => 'Question',
+                    'name' => $item->question,
+                    'acceptedAnswer' => [
+                        '@'.'type' => 'Answer',
+                        'text' => strip_tags($item->answer),
+                    ],
+                ];
+            }
+        }
+    }
+@endphp
+@if(count($faqEntities) > 0)
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@'.'context' => 'https://schema.org',
+        '@'.'type' => 'FAQPage',
+        'mainEntity' => $faqEntities,
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endif
 @endsection
