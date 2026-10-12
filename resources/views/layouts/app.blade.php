@@ -268,6 +268,33 @@
         </div>
     </footer>
 
+    <!-- Floating WhatsApp Button (Semua Halaman Publik) -->
+    @php
+        $rawWa = $siteSettings['contact.whatsapp'] ?? $siteSettings['company.whatsapp'] ?? '081234567890';
+        $floatingWa = preg_replace('/[^0-9]/', '', $rawWa) ?? '';
+        if (str_starts_with($floatingWa, '0')) {
+            $floatingWa = '62' . substr($floatingWa, 1);
+        }
+    @endphp
+    <aside aria-label="Kontak Cepat WhatsApp" class="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40">
+        <a href="https://wa.me/{{ $floatingWa }}?text={{ rawurlencode('Halo SAM Orthotic Prosthetic, saya ingin berkonsultasi mengenai alat bantu gerak.') }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           aria-label="Konsultasi Cepat via WhatsApp"
+           class="group flex items-center gap-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white p-3.5 sm:py-3.5 sm:px-5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-hidden focus:ring-4 focus:ring-[#25D366]/40">
+            <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+            </span>
+            <svg class="w-6 h-6 fill-current shrink-0" viewBox="0 0 24 24">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+            </svg>
+            <span class="text-xs sm:text-sm font-semibold tracking-wide hidden sm:inline">
+                Konsultasi WhatsApp
+            </span>
+        </a>
+    </aside>
+
     @stack('scripts')
 </body>
 </html>
