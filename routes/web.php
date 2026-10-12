@@ -6,9 +6,9 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ManageAppointmentController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\TestimonialController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,6 +24,11 @@ Route::get('/katalog/{slug}', [CatalogController::class, 'show'])->name('catalog
 Route::get('/faq', [FaqController::class, 'index'])->name('faq');
 Route::get('/kebijakan-privasi', [PageController::class, 'privacy'])->name('privacy');
 
+Route::get('/testimoni', [TestimonialController::class, 'index'])->name('testimonials.index');
+Route::post('/testimoni', [TestimonialController::class, 'store'])
+    ->middleware('throttle:3,60')
+    ->name('testimonials.store');
+
 /*
 |--------------------------------------------------------------------------
 | Appointment Flow Routes
@@ -36,18 +41,6 @@ Route::post('/appointment', [AppointmentController::class, 'store'])
 
 Route::get('/janji/konfirmasi/{code}', [AppointmentController::class, 'confirmation'])
     ->name('appointment.confirmation');
-
-Route::get('/janji/{code}', [ManageAppointmentController::class, 'show'])
-    ->middleware('throttle:30,1')
-    ->name('appointment.manage');
-
-Route::post('/janji/{code}/reschedule', [ManageAppointmentController::class, 'reschedule'])
-    ->middleware('throttle:10,1')
-    ->name('appointment.reschedule');
-
-Route::post('/janji/{code}/batal', [ManageAppointmentController::class, 'cancel'])
-    ->middleware('throttle:10,1')
-    ->name('appointment.cancel');
 
 /*
 |--------------------------------------------------------------------------

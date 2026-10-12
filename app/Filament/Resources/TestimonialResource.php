@@ -23,6 +23,11 @@ class TestimonialResource extends Resource
 
     protected static ?string $navigationLabel = 'Testimoni';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('status', 'pending')->count() ?: null;
+    }
+
     protected static ?string $navigationGroup = 'Website & Konten';
 
     protected static ?string $modelLabel = 'Testimoni';
@@ -64,10 +69,11 @@ class TestimonialResource extends Resource
                     ->label('Rating (opsional)')
                     ->options([5 => '★★★★★ (5)', 4 => '★★★★ (4)', 3 => '★★★ (3)', 2 => '★★ (2)', 1 => '★ (1)']),
 
-                Forms\Components\FileUpload::make('photo')
-                    ->label('Foto (opsional)')
+                Forms\Components\FileUpload::make('photos')
+                    ->label('Foto (opsional, maks 2)')
+                    ->multiple()
+                    ->maxFiles(2)
                     ->image()
-                    ->avatar()
                     ->disk('public')
                     ->directory('testimonials')
                     ->imageResizeMode('cover')
@@ -75,7 +81,7 @@ class TestimonialResource extends Resource
                     ->imageResizeTargetWidth('400')
                     ->imageResizeTargetHeight('400')
                     ->maxSize(2048)
-                    ->helperText('Hanya unggah foto bila ada persetujuan tertulis dari pasien.'),
+                    ->helperText('Hanya unggah foto bila ada persetujuan tertulis dari pasien. Ukuran maks 2MB.'),
             ])->columns(2),
 
             Forms\Components\Section::make('Izin & Publikasi')->schema([
@@ -84,6 +90,19 @@ class TestimonialResource extends Resource
                     ->helperText('Centang hanya bila pasien sudah memberi izin testimoninya ditampilkan di website.')
                     ->live(),
 
+                Forms\Components\Select::make('status')
+                    ->label('Status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                    ])
+                    ->default('pending')
+                    ->required(),
+                Forms\Components\TextInput::make('source')
+                    ->label('Sumber')
+                    ->default('admin')
+                    ->disabled(),
                 Forms\Components\Toggle::make('is_active')
                     ->label('Tampilkan di website')
                     ->default(false)
@@ -102,10 +121,12 @@ class TestimonialResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('photo')
-                    ->label('')
+                Tables\Columns\ImageColumn::make('photos')
+                    ->label('Foto')
                     ->disk('public')
-                    ->circular(),
+                    ->circular()
+                    ->stacked()
+                    ->limit(2),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')
                     ->searchable()
@@ -123,6 +144,14 @@ class TestimonialResource extends Resource
                     ->label('Produk')
                     ->placeholder('-')
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        default => 'gray',
+                    }),
                 Tables\Columns\IconColumn::make('consent_confirmed')
                     ->label('Izin')
                     ->boolean(),
@@ -134,11 +163,45 @@ class TestimonialResource extends Resource
             ->reorderable('sort_order')
             ->defaultSort('sort_order')
             ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status Persetujuan')
+                    ->options([
+                        'pending' => 'Menunggu Persetujuan',
+                        'approved' => 'Disetujui',
+                        'rejected' => 'Ditolak',
+                    ]),
                 Tables\Filters\TernaryFilter::make('is_active')->label('Status Aktif'),
                 Tables\Filters\TernaryFilter::make('consent_confirmed')->label('Izin Tampil'),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
+                Tables\Actions\Action::make('approve')
+                    ->label('Setujui')
+                    ->icon('heroicon-m-check')
+                    ->color('success')
+                    ->visible(fn (Testimonial $record) => $record->status === 'pending')
+                    ->action(function (Testimonial $record) {
+                        if (! $record->consent_confirmed) {
+                            Notification::make()
+                                ->title('Gagal menyetujui')
+                                ->body('Izin tampil belum dikonfirmasi oleh pasien.')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+                        $record->update(['status' => 'approved', 'is_active' => true]);
+                        Notification::make()->title('Disetujui')->success()->send();
+                    }),
+                Tables\Actions\Action::make('reject')
+                    ->label('Tolak')
+                    ->icon('heroicon-m-x-mark')
+                    ->color('danger')
+                    ->visible(fn (Testimonial $record) => $record->status === 'pending')
+                    ->action(function (Testimonial $record) {
+                        $record->update(['status' => 'rejected', 'is_active' => false]);
+                        Notification::make()->title('Ditolak')->success()->send();
+                    }),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),

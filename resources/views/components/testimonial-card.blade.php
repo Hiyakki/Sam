@@ -1,62 +1,58 @@
-@props([
-    'testimonial',
-    'class' => '',
-])
+@props(['testimonial'])
 
-<div class="bg-white rounded-3xl border border-gray-200/90 p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden {{ $class }}">
-    <!-- Decorative Quote Icon in background -->
-    <div class="absolute top-4 right-5 text-surface-soft font-serif text-7xl select-none pointer-events-none leading-none -z-0">
-        &ldquo;
+<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col gap-4 relative overflow-hidden group hover:shadow-md transition-shadow">
+    <!-- Decorative Quote Icon -->
+    <div class="absolute top-4 right-4 text-gray-100/60 transform rotate-180">
+        <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+        </svg>
     </div>
 
-    <div class="relative z-10">
-        <!-- Rating Stars -->
-        @if ($testimonial->rating)
-            <div class="flex items-center gap-1 text-accent mb-4">
-                @for ($i = 1; $i <= 5; $i++)
-                    <svg class="w-4 h-4 {{ $i <= $testimonial->rating ? 'fill-current' : 'text-gray-200 fill-current' }}" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                    </svg>
-                @endfor
+    <div class="relative z-10 flex-1 space-y-4">
+        <!-- Rating -->
+        @if($testimonial->rating)
+            <x-star-rating :rating="$testimonial->rating" size="sm" />
+        @endif
+        
+        <!-- Content -->
+        <p class="text-base text-gray-700 leading-relaxed font-medium">
+            "{{ $testimonial->content }}"
+        </p>
+
+        <!-- Product Link -->
+        @if($testimonial->product)
+            <div class="inline-flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/5 px-2.5 py-1 rounded-md">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <a href="{{ route('catalog.show', $testimonial->product->slug) }}" class="hover:underline">
+                    {{ $testimonial->product->name }}
+                </a>
             </div>
         @endif
-
-        <blockquote class="text-text-muted text-sm sm:text-base leading-relaxed italic mb-6">
-            &ldquo;{{ $testimonial->content }}&rdquo;
-        </blockquote>
     </div>
-
-    <!-- Patient / Author Info -->
-    <div class="pt-5 border-t border-gray-100 flex items-center gap-3.5 relative z-10">
-        @if ($testimonial->photo)
-            <img src="{{ Storage::disk('public')->url($testimonial->photo) }}"
-                 alt="{{ $testimonial->name }}"
-                 width="48"
-                 height="48"
-                 loading="lazy"
-                 class="w-12 h-12 rounded-full object-cover border border-gray-200 shrink-0">
-        @else
-            <div class="w-12 h-12 rounded-full bg-surface-soft text-primary font-bold text-base flex items-center justify-center shrink-0 border border-primary/10 shadow-2xs">
-                {{ strtoupper(substr($testimonial->name, 0, 1)) }}
+    
+    <!-- Footer: Author & Photos -->
+    <div class="relative z-10 flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
+        <div class="flex items-center gap-3">
+            <!-- Initials Avatar -->
+            <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                {{ collect(explode(' ', $testimonial->name))->map(fn($word) => strtoupper(substr($word, 0, 1)))->take(2)->join('') }}
             </div>
-        @endif
-
-        <div class="overflow-hidden">
-            <h4 class="font-bold text-sm sm:text-base text-primary truncate">
-                {{ $testimonial->name }}
-            </h4>
-
-            @if ($testimonial->role_or_info)
-                <p class="text-xs text-text-muted truncate">
-                    {{ $testimonial->role_or_info }}
-                </p>
-            @endif
-
-            @if ($testimonial->product)
-                <span class="inline-block mt-0.5 text-[11px] font-semibold text-primary/80 bg-surface-soft px-2 py-0.5 rounded-md truncate max-w-full">
-                    Alat: {{ $testimonial->product->name }}
-                </span>
-            @endif
+            <div>
+                <h3 class="font-bold text-gray-900 text-sm">{{ $testimonial->name }}</h3>
+                <p class="text-xs text-gray-500">{{ $testimonial->role_or_info }}</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">{{ \Carbon\Carbon::parse($testimonial->created_at)->translatedFormat('F Y') }}</p>
+            </div>
         </div>
+        
+        <!-- Photos -->
+        @if($testimonial->photos && is_array($testimonial->photos) && count($testimonial->photos) > 0)
+        <div class="flex gap-2 shrink-0">
+            @foreach($testimonial->photos as $photo)
+            <a href="{{ Storage::url($photo) }}" target="_blank" class="block rounded-lg overflow-hidden border border-gray-200">
+                <img src="{{ Storage::url($photo) }}" alt="Foto Testimoni" class="w-12 h-12 object-cover hover:scale-110 transition-transform duration-300">
+            </a>
+            @endforeach
+        </div>
+        @endif
     </div>
 </div>

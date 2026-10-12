@@ -6,7 +6,7 @@
     {{-- 1. Hero Section (2-col desktop, 1-col mobile, factual trust metrics) --}}
     @include('pages.home._hero')
 
-    {{-- 2. Strip Kategori (Orthosis, Prosthesis, Komponen dengan hitungan akurat) --}}
+    {{-- 2. Strip Kategori (Orthosis, Prosthesis dengan hitungan akurat) --}}
     @include('pages.home._categories')
 
     {{-- 3. Layanan & Alur 3 Tahap (Konsultasi -> Pengukuran/Fitting -> Perawatan/Perbaikan) --}}

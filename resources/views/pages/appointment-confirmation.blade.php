@@ -25,25 +25,7 @@
             </p>
         </div>
 
-        <!-- Box Kode Janji Temu -->
-        <div class="bg-surface-soft rounded-2xl p-6 border border-primary/20 max-w-md mx-auto space-y-2">
-            <div class="text-xs uppercase tracking-wider text-primary font-bold">
-                Kode Janji Temu Anda
-            </div>
-            <div class="flex items-center justify-center gap-3">
-                <span class="text-2xl sm:text-3xl font-mono font-bold text-primary tracking-widest">
-                    {{ $appointment->code }}
-                </span>
-                <button type="button"
-                        @click="copyCode()"
-                        class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 hover:bg-surface-soft text-primary transition-colors flex items-center gap-1 shadow-2xs">
-                    <span x-text="copied ? 'Tersalin!' : 'Salin'"></span>
-                </button>
-            </div>
-            <p class="text-[11px] text-text-muted pt-1">
-                Simpan kode ini untuk mengecek status, mengubah jadwal, atau membatalkan janji temu.
-            </p>
-        </div>
+
 
         <!-- Ringkasan Kunjungan -->
         <div class="bg-white rounded-2xl border border-gray-200 p-6 text-left max-w-lg mx-auto space-y-3.5 text-xs sm:text-sm">
@@ -91,13 +73,9 @@
         <!-- Tombol Tindakan -->
         @php
             $branchWa = preg_replace('/[^0-9]/', '', $appointment->branch?->phone_wa ?? $settings['company.whatsapp'] ?? '6281234567890');
-            $waMessage = "Halo {$appointment->branch?->name}, saya telah membuat janji temu dengan kode {$appointment->code} atas nama {$appointment->patient_name}. Mohon konfirmasinya. Terima kasih.";
+            $waMessage = "Halo {$appointment->branch?->name}, saya telah membuat janji temu atas nama {$appointment->patient_name} pada tanggal {$appointment->appointment_date->isoFormat('D MMMM Y')}. Mohon konfirmasinya. Terima kasih.";
         @endphp
         <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3.5">
-            <a href="{{ route('appointment.manage', $appointment->code) }}"
-               class="w-full sm:w-auto px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-primary hover:bg-primary-dark transition-colors shadow-xs">
-                Kelola Janji Temu Ini
-            </a>
 
             <a href="https://wa.me/{{ $branchWa }}?text={{ urlencode($waMessage) }}"
                target="_blank"

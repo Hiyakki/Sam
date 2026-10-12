@@ -86,8 +86,8 @@
 
                                 <div x-show="activeAccordion === {{ $faq->id }}"
                                      x-cloak
-                                     class="mt-4 pt-4 border-t border-gray-200 text-sm text-text-muted leading-relaxed prose prose-sm max-w-none">
-                                    {!! nl2br(e($faq->answer)) !!}
+                                     class="mt-4 pt-4 border-t border-gray-200 text-sm text-text-muted leading-relaxed prose prose-sm max-w-none prose-a:text-accent prose-a:font-semibold hover:prose-a:underline">
+                                    {!! $faq->answer !!}
                                 </div>
                             </div>
                         @endforeach

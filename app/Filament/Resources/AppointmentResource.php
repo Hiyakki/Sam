@@ -60,9 +60,6 @@ class AppointmentResource extends Resource
         return 'warning';
     }
 
-    /**
-     * Admin hanya mengubah status dan catatan; data pasien tidak diedit.
-     */
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -85,6 +82,50 @@ class AppointmentResource extends Resource
                     ->maxLength(2000)
                     ->helperText('Hanya terlihat oleh admin.'),
             ]),
+
+            Forms\Components\Section::make('Detail Kunjungan (Jadwal & Lokasi)')->schema([
+                Forms\Components\Select::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->label('Kantor Cabang')
+                    ->required(),
+                Forms\Components\Select::make('service_id')
+                    ->relationship('service', 'name')
+                    ->label('Layanan')
+                    ->required(),
+                Forms\Components\DatePicker::make('appointment_date')
+                    ->label('Tanggal Kunjungan')
+                    ->required(),
+                Forms\Components\TimePicker::make('start_time')
+                    ->label('Waktu Mulai')
+                    ->required(),
+                Forms\Components\TimePicker::make('end_time')
+                    ->label('Waktu Selesai')
+                    ->required(),
+            ])->columns(2),
+
+            Forms\Components\Section::make('Data Pasien')->schema([
+                Forms\Components\TextInput::make('patient_name')
+                    ->label('Nama Pasien')
+                    ->required()
+                    ->maxLength(120),
+                Forms\Components\TextInput::make('patient_age')
+                    ->label('Usia')
+                    ->numeric()
+                    ->required(),
+                Forms\Components\TextInput::make('patient_phone')
+                    ->label('Telepon / WA')
+                    ->required()
+                    ->maxLength(20),
+                Forms\Components\TextInput::make('patient_email')
+                    ->label('Email')
+                    ->email()
+                    ->required()
+                    ->maxLength(150),
+                Forms\Components\Textarea::make('complaint')
+                    ->label('Keluhan')
+                    ->required()
+                    ->columnSpanFull(),
+            ])->columns(2),
         ]);
     }
 
@@ -274,9 +315,9 @@ class AppointmentResource extends Resource
         $branch = $record->branch?->name ?? 'SAM Orthotic Prosthetic';
 
         return match ($type) {
-            'reminder' => "Halo {$record->patient_name}, kami mengingatkan kembali jadwal janji temu Anda di {$branch} pada {$date} pukul {$time} WIB (Kode: {$record->code}). Mohon hadir 10 menit lebih awal. Terima kasih!",
-            'reschedule' => "Halo {$record->patient_name}, mengenai janji temu Anda di {$branch} (Kode: {$record->code}), apakah Anda bersedia kami sesuaikan jadwal kunjungannya? Mohon informasikan ketersediaan waktu Anda.",
-            default => "Halo {$record->patient_name}, janji temu Anda di {$branch} pada {$date} pukul {$time} WIB dengan kode {$record->code} telah kami konfirmasi. Silakan datang sesuai jadwal.",
+            'reminder' => "Halo {$record->patient_name}, kami mengingatkan kembali jadwal janji temu Anda di {$branch} pada {$date} pukul {$time} WIB. Mohon hadir 10 menit lebih awal. Terima kasih!",
+            'reschedule' => "Halo {$record->patient_name}, mengenai janji temu Anda di {$branch}, apakah Anda bersedia kami sesuaikan jadwal kunjungannya? Mohon informasikan ketersediaan waktu Anda.",
+            default => "Halo {$record->patient_name}, janji temu Anda di {$branch} pada {$date} pukul {$time} WIB telah kami konfirmasi. Silakan datang sesuai jadwal.",
         };
     }
 

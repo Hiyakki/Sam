@@ -1,5 +1,9 @@
-// SAM Orthotic Prosthetic Frontend Interactions
+import Alpine from 'alpinejs';
 
+window.Alpine = Alpine;
+Alpine.start();
+
+// SAM Orthotic Prosthetic Frontend Interactions
 document.addEventListener('DOMContentLoaded', () => {
     // Scroll reveal observer for .animate-fade-up elements
     const fadeElements = document.querySelectorAll('.animate-fade-up');

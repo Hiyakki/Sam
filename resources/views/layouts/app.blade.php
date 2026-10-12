@@ -32,7 +32,6 @@
 
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @livewireStyles
     @stack('styles')
 </head>
 <body class="bg-background text-text antialiased min-h-screen flex flex-col font-['Inter',sans-serif]">
@@ -80,6 +79,10 @@
                     <a href="{{ route('faq') }}"
                        class="px-3.5 py-2 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('faq') ? 'bg-surface-soft text-primary font-semibold' : 'text-text-muted hover:text-primary hover:bg-surface-soft/60' }}">
                         FAQ
+                    </a>
+                    <a href="{{ route('testimonials.index') }}"
+                       class="px-3.5 py-2 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('testimonials.*') ? 'bg-surface-soft text-primary font-semibold' : 'text-text-muted hover:text-primary hover:bg-surface-soft/60' }}">
+                        Testimoni
                     </a>
                     <a href="{{ route('appointment') }}"
                        class="px-3.5 py-2 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('appointment') ? 'bg-surface-soft text-primary font-semibold' : 'text-text-muted hover:text-primary hover:bg-surface-soft/60' }}">
@@ -141,6 +144,10 @@
                class="block px-3.5 py-2.5 rounded-lg text-base font-medium {{ request()->routeIs('faq') ? 'bg-surface-soft text-primary font-semibold' : 'text-text-muted hover:bg-surface-soft' }}">
                 FAQ (Tanya Jawab)
             </a>
+            <a href="{{ route('testimonials.index') }}"
+               class="block px-3.5 py-2.5 rounded-lg text-base font-medium {{ request()->routeIs('testimonials.*') ? 'bg-surface-soft text-primary font-semibold' : 'text-text-muted hover:bg-surface-soft' }}">
+                Testimoni Pasien
+            </a>
             <a href="{{ route('appointment') }}"
                class="block px-3.5 py-2.5 rounded-lg text-base font-medium {{ request()->routeIs('appointment') ? 'bg-surface-soft text-primary font-semibold' : 'text-text-muted hover:bg-surface-soft' }}">
                 Appointment
@@ -186,6 +193,7 @@
                         <li><a href="{{ route('about') }}" class="hover:text-white transition-colors">Tentang Kami</a></li>
                         <li><a href="{{ route('catalog.index') }}" class="hover:text-white transition-colors">Katalog Orthosis & Prosthesis</a></li>
                         <li><a href="{{ route('faq') }}" class="hover:text-white transition-colors">Pertanyaan Umum (FAQ)</a></li>
+                        <li><a href="{{ route('testimonials.index') }}" class="hover:text-white transition-colors">Testimoni Pasien</a></li>
                         <li><a href="{{ route('appointment') }}" class="hover:text-white transition-colors">Reservasi Janji Temu</a></li>
                         <li><a href="{{ route('privacy') }}" class="hover:text-white transition-colors">Kebijakan Privasi</a></li>
                     </ul>
@@ -252,7 +260,6 @@
         </div>
     </footer>
 
-    @livewireScripts
     @stack('scripts')
 </body>
 </html>

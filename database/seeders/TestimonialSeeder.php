@@ -22,17 +22,19 @@ class TestimonialSeeder extends Seeder
                 'photo' => null,
                 'consent_confirmed' => false, // WAJIB diisi admin setelah mendapatkan izin asli
                 'is_active' => false, // Tidak tampil di publik sampai diaktifkan admin
+                'status' => 'rejected',
                 'sort_order' => 1,
             ],
             [
-                'name' => 'Bapak S.',
+                'name' => 'Bapak Sudirman',
                 'role_or_info' => 'Orang tua pasien skoliosis',
                 'product_id' => null,
-                'content' => '[Contoh: "Anak saya memakai Scoliosis Brace dari SAM. Prosesnya cepat dan petugasnya sangat sabar menjelaskan cara pemakaian..."]',
-                'rating' => null,
+                'content' => 'Anak saya memakai Scoliosis Brace dari SAM. Prosesnya cepat dan petugasnya sangat sabar menjelaskan cara pemakaian.',
+                'rating' => 5,
                 'photo' => null,
-                'consent_confirmed' => false,
-                'is_active' => false,
+                'consent_confirmed' => true,
+                'is_active' => true,
+                'status' => 'approved',
                 'sort_order' => 2,
             ],
             [
@@ -44,6 +46,7 @@ class TestimonialSeeder extends Seeder
                 'photo' => null,
                 'consent_confirmed' => false,
                 'is_active' => false,
+                'status' => 'rejected',
                 'sort_order' => 3,
             ],
         ];

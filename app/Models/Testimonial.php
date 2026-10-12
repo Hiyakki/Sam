@@ -19,7 +19,9 @@ class Testimonial extends Model
         'product_id',
         'content',
         'rating',
-        'photo',
+        'photos',
+        'status',
+        'source',
         'consent_confirmed',
         'is_active',
         'sort_order',
@@ -32,6 +34,7 @@ class Testimonial extends Model
             'is_active' => 'boolean',
             'sort_order' => 'integer',
             'rating' => 'integer',
+            'photos' => 'array',
         ];
     }
 
@@ -60,6 +63,7 @@ class Testimonial extends Model
     public function scopeActive(Builder $query): void
     {
         $query->where('is_active', true)
+            ->where('status', 'approved')
             ->where('consent_confirmed', true)
             ->orderBy('sort_order', 'asc');
     }

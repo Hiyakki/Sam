@@ -73,7 +73,7 @@
                     </h3>
 
                     <p class="text-xs sm:text-sm text-text-muted leading-relaxed">
-                        Evaluasi penggunaan berkala, panduan pemakaian mandiri, serta ketersediaan servis atau perbaikan komponen bila diperlukan.
+                        Evaluasi penggunaan berkala, panduan pemakaian mandiri, serta ketersediaan servis atau perbaikan alat bila diperlukan.
                     </p>
                 </div>
             </div>

@@ -20,7 +20,7 @@
                     <div x-show="activeFaq === {{ $faq->id }}"
                          x-cloak
                          x-collapse
-                         class="mt-4 pt-4 border-t border-gray-200/80 text-sm sm:text-base text-text-muted leading-relaxed prose prose-sm max-w-none">
+                         class="mt-4 pt-4 border-t border-gray-200/80 text-sm sm:text-base text-text-muted leading-relaxed prose prose-sm max-w-none prose-a:text-accent prose-a:font-semibold hover:prose-a:underline">
                         {!! $faq->answer !!}
                     </div>
                 </div>

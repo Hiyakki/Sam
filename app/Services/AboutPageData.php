@@ -67,6 +67,25 @@ class AboutPageData
      */
     protected static function getGalleryPhotos(): array
     {
+        $settings = SiteSetting::allCached();
+        $gallerySetting = $settings['general.gallery'] ?? [];
+
+        if (! empty($gallerySetting) && is_array($gallerySetting)) {
+            $valid = [];
+            foreach ($gallerySetting as $photo) {
+                if (! empty($photo['image'])) {
+                    $valid[] = [
+                        'path' => Storage::url($photo['image']),
+                        'alt' => $photo['alt'] ?? 'Foto Galeri SAM',
+                        'title' => $photo['title'] ?? 'Pelayanan SAM',
+                    ];
+                }
+            }
+            if (count($valid) >= 3) {
+                return $valid;
+            }
+        }
+
         $sitePhotos = [
             [
                 'file' => 'site/hero-clinic.webp',

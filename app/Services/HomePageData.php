@@ -21,31 +21,41 @@ class HomePageData
         $settings = SiteSetting::allCached();
 
         // 1. Root categories with total count (direct + all descendants) & representative photo
-        $categories = ProductCategory::roots()
+        $rootCategories = ProductCategory::roots()
             ->with([
                 'children' => fn ($q) => $q->withCount(['products' => fn ($p) => $p->where('is_active', true)]),
                 'products' => fn ($p) => $p->where('is_active', true)->whereNotNull('photo')->take(1),
             ])
             ->withCount(['products' => fn ($p) => $p->where('is_active', true)])
-            ->get()
-            ->map(function ($cat) {
-                $childrenCount = $cat->children->sum('products_count');
-                $cat->total_products_count = $cat->products_count + $childrenCount;
+            ->get();
 
-                // Pick representative photo from direct products or first child product
-                $directPhoto = $cat->products->first()?->photo;
-                if (! $directPhoto) {
-                    $childWithPhoto = Product::whereIn('category_id', $cat->children->pluck('id'))
-                        ->where('is_active', true)
-                        ->whereNotNull('photo')
-                        ->first();
-                    $cat->representative_photo = $childWithPhoto?->photo;
-                } else {
-                    $cat->representative_photo = $directPhoto;
-                }
+        $childIdsNeeded = $rootCategories->filter(fn ($cat) => ! $cat->products->first()?->photo)
+            ->flatMap(fn ($cat) => $cat->children->pluck('id'))
+            ->all();
 
-                return $cat;
-            });
+        $fallbackPhotos = ! empty($childIdsNeeded)
+            ? Product::whereIn('category_id', $childIdsNeeded)
+                ->where('is_active', true)
+                ->whereNotNull('photo')
+                ->get()
+                ->keyBy('category_id')
+            : collect();
+
+        $categories = $rootCategories->map(function ($cat) use ($fallbackPhotos) {
+            $childrenCount = $cat->children->sum('products_count');
+            $cat->total_products_count = $cat->products_count + $childrenCount;
+
+            // Pick representative photo from direct products or first child product
+            $directPhoto = $cat->products->first()?->photo;
+            if (! $directPhoto) {
+                $childPhoto = $cat->children->map(fn ($c) => $fallbackPhotos->get($c->id)?->photo)->filter()->first();
+                $cat->representative_photo = $childPhoto;
+            } else {
+                $cat->representative_photo = $directPhoto;
+            }
+
+            return $cat;
+        });
 
         // 2. Featured active products (6-8 items with category)
         $featuredProducts = Product::active()
@@ -107,6 +117,25 @@ class HomePageData
      */
     protected static function getGalleryPhotos(): array
     {
+        $settings = SiteSetting::allCached();
+        $gallerySetting = $settings['general.gallery'] ?? [];
+
+        if (! empty($gallerySetting) && is_array($gallerySetting)) {
+            $valid = [];
+            foreach ($gallerySetting as $photo) {
+                if (! empty($photo['image'])) {
+                    $valid[] = [
+                        'path' => Storage::url($photo['image']),
+                        'alt' => $photo['alt'] ?? 'Foto Galeri SAM',
+                        'title' => $photo['title'] ?? 'Pelayanan SAM',
+                    ];
+                }
+            }
+            if (count($valid) >= 3) {
+                return $valid;
+            }
+        }
+
         $sitePhotos = [
             [
                 'file' => 'site/hero-clinic.webp',

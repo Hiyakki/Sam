@@ -18,12 +18,7 @@
             Terima kasih telah mempercayakan kebutuhan mobilitas Anda kepada SAM Orthotic Prosthetic. Pendaftaran janji temu konsultasi Anda telah berhasil kami terima.
         </p>
 
-        <!-- Box Kode Janji -->
-        <div style="background-color: #ebf2e8; border: 1px dashed #a5bf98; border-radius: 12px; padding: 16px; text-align: center; margin: 24px 0;">
-            <div style="font-size: 11px; text-transform: uppercase; font-weight: bold; color: #869480; letter-spacing: 1px;">Kode Janji Temu Anda</div>
-            <div style="font-size: 24px; font-weight: bold; color: #242e24; margin: 6px 0; letter-spacing: 2px; font-family: monospace;">{{ $appointment->code }}</div>
-            <div style="font-size: 11px; color: #4b5549;">Gunakan kode ini untuk memeriksa atau mengelola jadwal Anda.</div>
-        </div>
+
 
         <!-- Detail Kunjungan -->
         <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px;">
@@ -53,11 +48,11 @@
             </tr>
         </table>
 
-        <!-- Tombol Aksi Kelola -->
+        <!-- Tombol Aksi Hubungi WA -->
         <div style="text-align: center; margin: 32px 0 16px 0;">
-            <a href="{{ route('appointment.manage', $appointment->code) }}"
+            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $appointment->branch?->phone_wa) }}?text=Halo%20Admin,%20saya%20{{ urlencode($appointment->patient_name) }},%20ingin%20mengubah%20atau%20membatalkan%20janji%20temu%20pada%20tanggal%20{{ $appointment->appointment_date->isoFormat('D MMMM Y') }}"
                style="background-color: #242e24; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-size: 13px; font-weight: bold; display: inline-block;">
-                Kelola / Lihat Detail Janji Temu
+                Hubungi Cabang via WhatsApp
             </a>
         </div>
 

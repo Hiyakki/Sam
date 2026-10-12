@@ -1,11 +1,11 @@
 <x-section bg="white" id="kategori">
     <x-section-heading
         badge="Katalog Alat Bantu"
-        title="Tiga Kategori Produk Utama"
+        title="Kategori Produk Utama"
         subtitle="Solusi alat ortopedi dan pengganti anggota gerak yang dirancang kustom dengan standar presisi tinggi."
     />
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 max-w-4xl mx-auto gap-8">
         @foreach ($categories as $index => $cat)
             @php
                 $photoUrl = $cat->representative_photo ? Storage::disk('public')->url($cat->representative_photo) : null;
@@ -42,8 +42,6 @@
                             Alat bantu penyangga tubuh untuk koreksi, fiksasi, dan mobilisasi: Spinal Brace, Upper Limb, dan Lower Limb (AFO, KAFO, Insole).
                         @elseif ($cat->name === 'Prosthesis')
                             Pengganti anggota gerak tubuh pasca amputasi: Kaki palsu bawah/atas lutut (Transtibial/Transfemoral) dan tangan palsu.
-                        @elseif ($cat->name === 'Komponen')
-                            Komponen suku cadang berkualitas: Socket, Knee Joint (Mechanical/Hydraulic/C-Leg), Foot Component, Adaptor Socket, Tube, dan Klem.
                         @else
                             Koleksi alat bantu ortotik dan prostetik sesuai kebutuhan klinis Anda.
                         @endif

@@ -16,7 +16,6 @@ class ProductSeeder extends Seeder
         $this->seedSpinalOrthosis();
         $this->seedUpperLimbProsthesis();
         $this->seedLowerLimbProsthesis();
-        $this->seedKomponen();
     }
 
     private function create(string $categorySlug, array $products): void
@@ -307,59 +306,6 @@ class ProductSeeder extends Seeder
                 'name' => 'Hip Disarticulation Prosthesis',
                 'indication' => 'Level amputasi tepat pada tulang hip',
             ],
-        ]);
-    }
-
-    private function seedKomponen(): void
-    {
-        // Socket
-        $this->create('socket', [
-            ['name' => 'Above Knee Socket',        'description' => '[LENGKAPI]'],
-            ['name' => 'Below Knee Socket',         'description' => '[LENGKAPI]'],
-            ['name' => 'Soft Socket',               'description' => '[LENGKAPI]'],
-            ['name' => 'Silicone Liner - Cushion',  'description' => '[LENGKAPI]'],
-            ['name' => 'Silicone Liner - Locking',  'description' => '[LENGKAPI]'],
-        ]);
-
-        // Adaptor Socket
-        $this->create('adaptor-socket', [
-            ['name' => 'Adaptor Socket Tipe 1', 'description' => '[LENGKAPI]'],
-            ['name' => 'Adaptor Socket Tipe 2', 'description' => '[LENGKAPI]'],
-            ['name' => 'Adaptor Socket Tipe 3', 'description' => '[LENGKAPI]'],
-            ['name' => 'Adaptor Socket Tipe 4', 'description' => '[LENGKAPI]'],
-        ]);
-
-        // Tube & Klem
-        $this->create('tube-klem', [
-            ['name' => 'Tube',  'description' => '[LENGKAPI]'],
-            ['name' => 'Klem',  'description' => '[LENGKAPI]'],
-        ]);
-
-        // Knee Joint
-        $this->create('knee-joint', [
-            ['name' => 'Mechanical Knee Axis',    'description' => '[LENGKAPI]'],
-            ['name' => 'Pneumatic Knee Joint (Varian 1)', 'description' => '[LENGKAPI]'],
-            ['name' => 'Pneumatic Knee Joint (Varian 2)', 'description' => '[LENGKAPI]'],
-            ['name' => 'Hydraulic Knee Joint',    'description' => '[LENGKAPI]'],
-            ['name' => 'C-Leg',                   'description' => '[LENGKAPI]'],
-        ]);
-
-        // Foot Component
-        $this->create('foot-component', [
-            ['name' => 'SACH Foot',         'description' => '[LENGKAPI]'],
-            ['name' => 'Single Axis Foot',  'description' => '[LENGKAPI]'],
-            ['name' => 'Multi Axis Foot',   'description' => '[LENGKAPI]'],
-            ['name' => 'Foot Cover',        'description' => '[LENGKAPI]'],
-        ]);
-
-        // Foot Component (Sport)
-        $this->create('foot-component-sport', [
-            ['name' => 'E-PRF01', 'description' => '[LENGKAPI]'],
-            ['name' => 'E-PRF02', 'description' => '[LENGKAPI]'],
-            ['name' => 'E-PRF03', 'description' => '[LENGKAPI]'],
-            ['name' => 'E-PRF04', 'description' => '[LENGKAPI]'],
-            ['name' => 'E-PRF05', 'description' => '[LENGKAPI]'],
-            ['name' => 'E-PRF06', 'description' => '[LENGKAPI]'],
         ]);
     }
 }

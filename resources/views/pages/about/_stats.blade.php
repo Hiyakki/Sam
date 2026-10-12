@@ -13,7 +13,7 @@
             <x-stat
                 :number="$stats['products_count']"
                 suffix="+"
-                label="Produk & Komponen Katalog"
+                label="Produk Katalog"
             />
             <x-stat
                 :number="$stats['services_count']"

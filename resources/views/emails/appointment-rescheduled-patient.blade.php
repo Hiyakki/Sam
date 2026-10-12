@@ -15,7 +15,7 @@
             Halo <strong>{{ $appointment->patient_name }}</strong>,
         </p>
         <p style="font-size: 14px; line-height: 1.6; color: #4b5549;">
-            Jadwal kunjungan janji temu Anda dengan kode <strong>{{ $appointment->code }}</strong> telah berhasil diperbarui dengan detail berikut:
+            Jadwal kunjungan janji temu Anda telah berhasil diperbarui dengan detail berikut:
         </p>
 
         <!-- Box Jadwal Baru -->
@@ -33,9 +33,9 @@
         </div>
 
         <div style="text-align: center; margin: 28px 0 12px 0;">
-            <a href="{{ route('appointment.manage', $appointment->code) }}"
+            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $appointment->branch?->phone_wa) }}?text=Halo%20Admin,%20saya%20{{ urlencode($appointment->patient_name) }},%20ingin%20mengubah%20atau%20membatalkan%20janji%20temu%20pada%20tanggal%20{{ $appointment->appointment_date->isoFormat('D MMMM Y') }}"
                style="background-color: #242e24; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-size: 13px; font-weight: bold; display: inline-block;">
-                Buka Halaman Kelola Janji
+                Hubungi Cabang via WhatsApp
             </a>
         </div>
     </div>

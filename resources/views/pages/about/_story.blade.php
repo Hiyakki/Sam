@@ -36,15 +36,8 @@
             <div class="absolute -bottom-8 -left-8 w-60 h-60 rounded-3xl bg-surface-soft border border-primary/10 -rotate-6 -z-10"></div>
 
             <div class="relative space-y-4">
-                <!-- Top Big Photo -->
                 <div class="rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-surface-soft aspect-16/10">
-                    @if (file_exists(public_path('storage/site/consultation.webp')))
-                        <img src="{{ asset('storage/site/consultation.webp') }}"
-                             alt="Sesi Konsultasi Bersama Pasien SAM"
-                             width="600"
-                             height="380"
-                             class="w-full h-full object-cover">
-                    @elseif (!empty($galleryPhotos[0]))
+                    @if (!empty($galleryPhotos[0]))
                         <img src="{{ $galleryPhotos[0]['path'] }}"
                              alt="{{ $galleryPhotos[0]['alt'] }}"
                              width="600"
@@ -60,9 +53,9 @@
                 <!-- Bottom Offset Photo Stacked -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="rounded-2xl overflow-hidden shadow-lg border-3 border-white bg-surface-soft aspect-4/3 -mt-6 sm:-mt-8 ml-4 z-10">
-                        @if (file_exists(public_path('storage/site/fitting.webp')))
-                            <img src="{{ asset('storage/site/fitting.webp') }}"
-                                 alt="Sesi Fitting Alat Pasien"
+                        @if (!empty($galleryPhotos[1]))
+                            <img src="{{ $galleryPhotos[1]['path'] }}"
+                                 alt="{{ $galleryPhotos[1]['alt'] }}"
                                  width="300"
                                  height="220"
                                  class="w-full h-full object-cover">
@@ -74,9 +67,9 @@
                     </div>
 
                     <div class="rounded-2xl overflow-hidden shadow-lg border-3 border-white bg-surface-soft aspect-4/3 -mt-6 sm:-mt-8 mr-2 z-10">
-                        @if (file_exists(public_path('storage/site/workshop.webp')))
-                            <img src="{{ asset('storage/site/workshop.webp') }}"
-                                 alt="Fabrikasi Workshop Mandiri"
+                        @if (!empty($galleryPhotos[2]))
+                            <img src="{{ $galleryPhotos[2]['path'] }}"
+                                 alt="{{ $galleryPhotos[2]['alt'] }}"
                                  width="300"
                                  height="220"
                                  class="w-full h-full object-cover">

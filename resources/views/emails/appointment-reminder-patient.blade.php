@@ -20,7 +20,7 @@
 
         <!-- Detail Kunjungan Besok -->
         <div style="background-color: #ebf2e8; border: 1px solid #a5bf98; border-radius: 12px; padding: 20px; margin: 20px 0;">
-            <div style="font-size: 13px; color: #4b5549; margin-bottom: 6px;">Kode Reservasi: <strong style="font-family: monospace; font-size: 15px; color: #242e24;">{{ $appointment->code }}</strong></div>
+
             <div style="font-size: 16px; font-weight: bold; color: #242e24;">
                 Pukul {{ substr($appointment->start_time, 0, 5) }} - {{ substr($appointment->end_time, 0, 5) }} WIB
             </div>
@@ -43,9 +43,9 @@
         </div>
 
         <div style="text-align: center; margin: 28px 0 12px 0;">
-            <a href="{{ route('appointment.manage', $appointment->code) }}"
+            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $appointment->branch?->phone_wa) }}?text=Halo%20Admin,%20saya%20{{ urlencode($appointment->patient_name) }},%20ingin%20mengubah%20atau%20membatalkan%20janji%20temu%20pada%20tanggal%20{{ $appointment->appointment_date->isoFormat('D MMMM Y') }}"
                style="background-color: #242e24; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-size: 13px; font-weight: bold; display: inline-block;">
-                Buka Halaman Kelola Janji
+                Hubungi Cabang via WhatsApp
             </a>
         </div>
     </div>

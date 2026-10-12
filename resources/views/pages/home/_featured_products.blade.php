@@ -11,10 +11,10 @@
                 <span>Koleksi Pilihan</span>
             </div>
             <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-['Playfair_Display'] text-primary tracking-tight">
-                Produk & Komponen Pilihan
+                Produk Kustom Pilihan
             </h2>
             <p class="text-base text-text-muted mt-2">
-                Beberapa pilihan alat ortotik, prostetik, dan suku cadang yang paling sering dipesan oleh pasien kami.
+                Beberapa pilihan alat ortotik dan prostetik yang paling sering dipesan oleh pasien kami.
             </p>
         </div>
 

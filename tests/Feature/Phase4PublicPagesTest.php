@@ -50,6 +50,7 @@ class Phase4PublicPagesTest extends TestCase
             'product_id' => $product->id,
             'rating' => 5,
             'is_active' => true,
+            'status' => 'approved',
             'consent_confirmed' => true,
         ]);
 

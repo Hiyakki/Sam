@@ -58,7 +58,7 @@ class AboutPageRedesignTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('2014'); // Tahun berdiri
-        $response->assertSee('Produk & Komponen Katalog');
+        $response->assertSee('Produk Katalog');
         $response->assertSee('Kantor Cabang Aktif');
     }
 

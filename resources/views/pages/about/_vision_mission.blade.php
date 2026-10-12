@@ -20,7 +20,7 @@
         $mission = [
             'Menyediakan alat bantu gerak presisi tinggi yang disesuaikan dengan anatomi unik tiap pasien.',
             'Memberikan konsultasi dan pendampingan rehabilitasi secara empati dan profesional.',
-            'Menjamin kualitas komponen tahan lama dan layanan purna jual yang berkelanjutan.',
+            'Menjamin kualitas alat tahan lama dan layanan purna jual yang berkelanjutan.',
         ];
     }
 @endphp

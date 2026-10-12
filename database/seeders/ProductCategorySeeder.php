@@ -29,19 +29,6 @@ class ProductCategorySeeder extends Seeder
                     ['name' => 'Lower Limb Prosthesis', 'slug' => 'lower-limb-prosthesis', 'sort_order' => 2],
                 ],
             ],
-            [
-                'name' => 'Komponen',
-                'slug' => 'komponen',
-                'sort_order' => 3,
-                'children' => [
-                    ['name' => 'Socket',               'slug' => 'socket',               'sort_order' => 1],
-                    ['name' => 'Adaptor Socket',        'slug' => 'adaptor-socket',       'sort_order' => 2],
-                    ['name' => 'Tube & Klem',           'slug' => 'tube-klem',            'sort_order' => 3],
-                    ['name' => 'Knee Joint',            'slug' => 'knee-joint',           'sort_order' => 4],
-                    ['name' => 'Foot Component',        'slug' => 'foot-component',       'sort_order' => 5],
-                    ['name' => 'Foot Component (Sport)', 'slug' => 'foot-component-sport', 'sort_order' => 6],
-                ],
-            ],
         ];
 
         foreach ($tree as $rootData) {

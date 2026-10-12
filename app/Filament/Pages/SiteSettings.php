@@ -41,7 +41,7 @@ class SiteSettings extends Page implements HasForms
     public const FIELDS = [
         'home_hero_title' => ['home.hero_title', 'text', 'home'],
         'home_hero_subtitle' => ['home.hero_subtitle', 'text', 'home'],
-        'home_hero_image' => ['home.hero_image', 'image', 'home'],
+        'home_hero_image' => ['home.hero_image', 'json', 'home'],
         'home_cta_text' => ['home.cta_text', 'text', 'home'],
         'home_advantages' => ['home.advantages', 'json', 'home'],
 
@@ -61,6 +61,7 @@ class SiteSettings extends Page implements HasForms
         'general_appointment_max_days' => ['general.appointment_max_days', 'text', 'general'],
         'general_appointment_reschedule_min_hours' => ['general.appointment_reschedule_min_hours', 'text', 'general'],
         'general_slot_buffer_minutes' => ['general.slot_buffer_minutes', 'text', 'general'],
+        'general_gallery' => ['general.gallery', 'json', 'general'],
     ];
 
     public function mount(): void
@@ -98,8 +99,10 @@ class SiteSettings extends Page implements HasForms
                                 ->rows(3)
                                 ->maxLength(400),
                             Forms\Components\FileUpload::make('home_hero_image')
-                                ->label('Gambar Hero')
+                                ->label('Gambar Hero (Slider)')
                                 ->image()
+                                ->multiple()
+                                ->maxFiles(10)
                                 ->disk('public')
                                 ->directory('settings')
                                 ->imageResizeMode('cover')
@@ -234,6 +237,38 @@ class SiteSettings extends Page implements HasForms
                                     ->label('Jeda slot hari ini (menit)')
                                     ->numeric()->integer()->minValue(0)->maxValue(480)->required(),
                             ]),
+                        ]),
+
+                    Forms\Components\Tabs\Tab::make('Galeri')
+                        ->icon('heroicon-m-photo')
+                        ->schema([
+                            Forms\Components\Repeater::make('general_gallery')
+                                ->label('Galeri Foto Workshop & Pelayanan')
+                                ->schema([
+                                    Forms\Components\FileUpload::make('image')
+                                        ->label('Foto')
+                                        ->image()
+                                        ->required()
+                                        ->disk('public')
+                                        ->directory('gallery')
+                                        ->imageResizeMode('cover')
+                                        ->imageResizeTargetWidth('800')
+                                        ->maxSize(2048),
+                                    Forms\Components\TextInput::make('title')
+                                        ->label('Judul Foto')
+                                        ->required()
+                                        ->maxLength(100),
+                                    Forms\Components\TextInput::make('alt')
+                                        ->label('Teks Alternatif (SEO/Aksesibilitas)')
+                                        ->required()
+                                        ->maxLength(150),
+                                ])
+                                ->columns(3)
+                                ->reorderable()
+                                ->collapsible()
+                                ->maxItems(10)
+                                ->itemLabel(fn (array $state) => $state['title'] ?? null)
+                                ->addActionLabel('Tambah Foto Galeri'),
                         ]),
 
                     Forms\Components\Tabs\Tab::make('Kebijakan Privasi')

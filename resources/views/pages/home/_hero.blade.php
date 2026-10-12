@@ -2,9 +2,17 @@
     $heroTitle = $settings['home.hero_title'] ?? 'Kembalikan Langkah & Mobilitas Anda dengan Presisi';
     $heroSubtitle = $settings['home.hero_subtitle'] ?? 'SAM Orthotic Prosthetic menghadirkan solusi pembuatan alat bantu gerak tubuh kustom sejak 2014.';
     $heroCta = $settings['home.cta_text'] ?? 'Buat Janji Konsultasi';
-    $heroImage = $settings['home.hero_image'] ?? null;
+    $heroImages = $settings['home.hero_image'] ?? [];
+    if (is_string($heroImages)) {
+        $heroImages = [$heroImages];
+    }
+    
+    $heroPhotoUrls = collect($heroImages)->map(fn($img) => Storage::url($img))->toArray();
+    
+    if (empty($heroPhotoUrls)) {
+        $heroPhotoUrls = file_exists(public_path('storage/site/hero-clinic.webp')) ? [asset('storage/site/hero-clinic.webp')] : [];
+    }
     $whatsapp = $settings['contact.whatsapp'] ?? '6281234567890';
-    $heroPhotoUrl = $heroImage ? Storage::url($heroImage) : (file_exists(public_path('storage/site/hero-clinic.webp')) ? asset('storage/site/hero-clinic.webp') : null);
 @endphp
 
 <section class="relative overflow-hidden bg-gradient-to-b from-surface-soft/80 via-background to-white py-14 sm:py-20 lg:py-24 border-b border-gray-200/80">
@@ -58,7 +66,7 @@
                     </div>
                     <div>
                         <div class="text-2xl sm:text-3xl font-bold font-['Playfair_Display'] text-primary">{{ $stats['products_count'] }}+</div>
-                        <div class="text-xs text-text-muted mt-0.5 font-medium">Produk & Komponen</div>
+                        <div class="text-xs text-text-muted mt-0.5 font-medium">Produk Kustom</div>
                     </div>
                     <div>
                         <div class="text-2xl sm:text-3xl font-bold font-['Playfair_Display'] text-primary">{{ $stats['services_count'] }}</div>
@@ -75,15 +83,38 @@
                 <div class="absolute top-1/2 -right-10 w-40 h-40 rounded-full bg-accent/10 blur-2xl -z-10"></div>
 
                 <!-- Main Rounded Photo Frame -->
-                <div class="relative mx-auto max-w-md lg:max-w-none rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-white">
-                    @if ($heroPhotoUrl)
-                        <img src="{{ $heroPhotoUrl }}"
-                             alt="Suasana Pelayanan SAM Orthotic Prosthetic"
-                             width="800"
-                             height="600"
-                             class="w-full aspect-4/3 sm:aspect-1/1 lg:aspect-4/3 object-cover">
-                    @else
-                        <!-- Decorative Illustration if photo not available (Bukan kotak kosong) -->
+                <div class="relative mx-auto max-w-md lg:max-w-none rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-white"
+                     x-data="{ 
+                        activeSlide: 0, 
+                        slides: {{ json_encode($heroPhotoUrls) }},
+                        init() {
+                            if (this.slides.length > 1) {
+                                setInterval(() => {
+                                    this.activeSlide = (this.activeSlide + 1) % this.slides.length;
+                                }, 3500);
+                            }
+                        }
+                     }">
+                     
+                    <template x-if="slides.length > 0">
+                        <div class="relative w-full aspect-4/3 sm:aspect-1/1 lg:aspect-4/3">
+                            <template x-for="(slide, index) in slides" :key="index">
+                                <img :src="slide"
+                                     alt="Suasana Pelayanan SAM Orthotic Prosthetic"
+                                     x-show="activeSlide === index"
+                                     x-transition:enter="transition-opacity ease-out duration-1000"
+                                     x-transition:enter-start="opacity-0"
+                                     x-transition:enter-end="opacity-100"
+                                     x-transition:leave="transition-opacity ease-in duration-1000"
+                                     x-transition:leave-start="opacity-100"
+                                     x-transition:leave-end="opacity-0"
+                                     class="absolute inset-0 w-full h-full object-cover">
+                            </template>
+                        </div>
+                    </template>
+
+                    <template x-if="slides.length === 0">
+                        <!-- Decorative Illustration if photo not available -->
                         <div class="w-full aspect-4/3 bg-gradient-to-tr from-surface-soft via-white to-surface-soft p-8 flex flex-col justify-between">
                             <div class="space-y-3">
                                 <span class="inline-block px-3 py-1 rounded-full bg-white text-xs font-semibold text-primary tracking-wider uppercase border border-gray-200 shadow-2xs">
@@ -97,31 +128,7 @@
                                 </p>
                             </div>
                         </div>
-                    @endif
-
-                    <!-- Floating Card 1: Pengalaman Sejak 2014 (Top Left) -->
-                    <div class="absolute top-4 left-4 bg-white/95 backdrop-blur-md rounded-2xl py-2 px-3.5 shadow-md border border-gray-100 flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-xs">
-                            10+
-                        </div>
-                        <div>
-                            <div class="text-[11px] font-bold text-primary leading-tight">Sejak 2014</div>
-                            <div class="text-[10px] text-text-muted">Dedikasi Klinis</div>
-                        </div>
-                    </div>
-
-                    <!-- Floating Card 2: Konsultasi Terjadwal (Bottom Right) -->
-                    <div class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl py-2.5 px-4 shadow-md border border-gray-100 flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-xl bg-accent text-white flex items-center justify-center text-xs">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="text-xs font-bold text-primary leading-tight">Konsultasi Terjadwal</div>
-                            <div class="text-[10px] text-text-muted">Pilih Jam & Cabang</div>
-                        </div>
-                    </div>
+                    </template>
                 </div>
             </div>
 
