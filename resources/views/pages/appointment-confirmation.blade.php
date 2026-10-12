@@ -25,7 +25,17 @@
             </p>
         </div>
 
-
+        <!-- Kode Janji -->
+        <div class="inline-block bg-surface-soft border border-gray-200 rounded-2xl px-6 py-4 mx-auto">
+            <span class="text-xs uppercase font-semibold text-text-muted tracking-wider block">Kode Janji Temu</span>
+            <div class="flex items-center justify-center gap-3 mt-1">
+                <span class="text-2xl sm:text-3xl font-mono font-bold text-primary tracking-wide">{{ $appointment->code }}</span>
+                <button type="button" @click="copyCode" class="text-xs text-text-muted hover:text-primary transition-colors flex items-center gap-1 border border-gray-200 rounded-lg px-2.5 py-1 bg-white">
+                    <span x-show="!copied">Salin</span>
+                    <span x-show="copied" class="text-emerald-600 font-semibold">Tersalin!</span>
+                </button>
+            </div>
+        </div>
 
         <!-- Ringkasan Kunjungan -->
         <div class="bg-white rounded-2xl border border-gray-200 p-6 text-left max-w-lg mx-auto space-y-3.5 text-xs sm:text-sm">
@@ -70,21 +80,27 @@
             </div>
         </div>
 
-        <!-- Tombol Tindakan -->
+        <!-- Kontak Admin Cabang -->
         @php
-            $branchWa = preg_replace('/[^0-9]/', '', $appointment->branch?->phone_wa ?? $settings['company.whatsapp'] ?? '6281234567890');
-            $waMessage = "Halo {$appointment->branch?->name}, saya telah membuat janji temu atas nama {$appointment->patient_name} pada tanggal {$appointment->appointment_date->isoFormat('D MMMM Y')}. Mohon konfirmasinya. Terima kasih.";
+            $branchPhone = $appointment->branch?->phone_wa ?? $settings['contact.whatsapp'] ?? $settings['company.whatsapp'] ?? '081234567890';
+            $branchWa = preg_replace('/[^0-9]/', '', $branchPhone);
+            if (str_starts_with($branchWa, '0')) {
+                $branchWa = '62' . substr($branchWa, 1);
+            }
         @endphp
-        <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3.5">
-
-            <a href="https://wa.me/{{ $branchWa }}?text={{ urlencode($waMessage) }}"
-               target="_blank"
-               class="w-full sm:w-auto px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20b858] transition-colors shadow-xs flex items-center justify-center gap-2">
-                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
-                </svg>
-                <span>Konfirmasi via WhatsApp</span>
-            </a>
+        <div class="pt-4 border-t border-gray-200 text-center space-y-1.5">
+            <p class="text-sm text-text-muted">
+                Untuk perubahan atau pembatalan, silakan hubungi admin kami:
+            </p>
+            <p class="text-sm font-semibold text-primary">
+                WhatsApp Cabang:
+                <a href="https://wa.me/{{ $branchWa }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="text-emerald-700 hover:text-emerald-800 underline">
+                    {{ $branchPhone }}
+                </a>
+            </p>
         </div>
     </div>
 </div>

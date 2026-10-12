@@ -4,15 +4,20 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AppointmentResource\Pages;
 use App\Models\Appointment;
+use App\Models\Branch;
+use App\Services\SlotService;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class AppointmentResource extends Resource
 {
@@ -234,10 +239,11 @@ class AppointmentResource extends Resource
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     self::statusAction('confirm', 'Konfirmasi', 'confirmed', 'heroicon-m-check-circle', 'success', ['pending']),
+                    self::rescheduleAction(),
                     self::statusAction('complete', 'Selesai', 'completed', 'heroicon-m-check-badge', 'primary', ['confirmed']),
                     self::statusAction('no_show', 'Tidak Hadir', 'no_show', 'heroicon-m-user-minus', 'gray', ['confirmed']),
-                    self::statusAction('cancel', 'Batalkan', 'cancelled', 'heroicon-m-x-circle', 'danger', ['pending', 'confirmed']),
-                ])->label('Ubah Status')->icon('heroicon-m-arrow-path')->button()->size('sm'),
+                    self::cancelAction(),
+                ])->label('Aksi Janji')->icon('heroicon-m-cog-6-tooth')->button()->size('sm'),
 
                 Tables\Actions\Action::make('whatsapp')
                     ->label('Chat WA')
@@ -250,6 +256,7 @@ class AppointmentResource extends Resource
                                 'confirm' => 'Template Konfirmasi Jadwal',
                                 'reminder' => 'Template Pengingat Kehadiran',
                                 'reschedule' => 'Template Penyesuaian Jadwal',
+                                'cancel' => 'Template Pembatalan',
                             ])
                             ->default('confirm')
                             ->reactive()
@@ -281,6 +288,213 @@ class AppointmentResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()->label('Tindak lanjut'),
             ]);
+    }
+
+    /**
+     * Aksi ubah jadwal janji temu oleh admin dengan validasi SlotService dan DB transaction locking.
+     */
+    public static function rescheduleAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('reschedule')
+            ->label('Ubah Jadwal')
+            ->icon('heroicon-m-calendar-days')
+            ->color('warning')
+            ->visible(fn (Appointment $record) => in_array($record->status, ['pending', 'confirmed'], true))
+            ->form([
+                Forms\Components\DatePicker::make('appointment_date')
+                    ->label('Tanggal Kunjungan Baru')
+                    ->required()
+                    ->minDate(now('Asia/Jakarta')->toDateString())
+                    ->live()
+                    ->afterStateUpdated(fn (Forms\Set $set) => $set('start_time', null)),
+                Forms\Components\Select::make('start_time')
+                    ->label('Slot Jam Baru')
+                    ->required()
+                    ->options(function (Forms\Get $get, Appointment $record) {
+                        $date = $get('appointment_date');
+                        if (! $date) {
+                            return [];
+                        }
+                        $branch = $record->branch;
+                        if (! $branch) {
+                            return [];
+                        }
+                        $slotService = app(SlotService::class);
+                        if (! $slotService->isDateBookable($branch, $date)) {
+                            return [];
+                        }
+                        $slots = $slotService->slotsFor($branch, $date);
+                        $options = [];
+                        foreach ($slots as $slot) {
+                            if ($slot['available']) {
+                                $options[$slot['start']] = $slot['label'];
+                            }
+                        }
+
+                        return $options;
+                    })
+                    ->helperText(function (Forms\Get $get, Appointment $record) {
+                        $date = $get('appointment_date');
+                        if (! $date) {
+                            return 'Pilih tanggal terlebih dahulu untuk melihat slot yang tersedia.';
+                        }
+                        $branch = $record->branch;
+                        if (! $branch) {
+                            return null;
+                        }
+                        $slotService = app(SlotService::class);
+                        if (! $slotService->isDateBookable($branch, $date)) {
+                            return 'Cabang tutup atau hari libur pada tanggal ini.';
+                        }
+
+                        return null;
+                    }),
+            ])
+            ->modalHeading(fn (Appointment $record) => "Ubah Jadwal: {$record->code}")
+            ->modalDescription('Pilih tanggal dan slot waktu baru yang masih tersedia.')
+            ->modalSubmitActionLabel('Simpan Perubahan Jadwal')
+            ->action(function (Appointment $record, array $data) {
+                $slotService = app(SlotService::class);
+
+                $result = DB::transaction(function () use ($record, $data, $slotService) {
+                    $appointment = Appointment::where('id', $record->id)->lockForUpdate()->first();
+                    $branch = Branch::where('id', $appointment->branch_id)->lockForUpdate()->first();
+
+                    if (! $branch || ! $branch->is_active) {
+                        return ['success' => false, 'message' => 'Cabang tidak aktif atau tidak ditemukan.'];
+                    }
+
+                    $targetDate = Carbon::parse($data['appointment_date'], 'Asia/Jakarta')->startOfDay();
+                    if (! $slotService->isDateBookable($branch, $targetDate)) {
+                        return ['success' => false, 'message' => 'Tanggal yang dipilih tidak dapat dipesan (tutup atau hari libur).'];
+                    }
+
+                    $startTime = substr((string) $data['start_time'], 0, 5);
+                    $slots = collect($slotService->slotsFor($branch, $targetDate));
+                    $matchingSlot = $slots->firstWhere('start', $startTime);
+
+                    if (! $matchingSlot) {
+                        return ['success' => false, 'message' => 'Slot waktu yang dipilih tidak valid.'];
+                    }
+
+                    // Kunci janji temu lain pada slot tersebut untuk memastikan kapasitas tidak terlampaui
+                    $activeAppointmentsCount = Appointment::where('branch_id', $branch->id)
+                        ->where('id', '!=', $appointment->id)
+                        ->whereDate('appointment_date', $targetDate->format('Y-m-d'))
+                        ->where(function ($q) use ($startTime) {
+                            $q->where('start_time', $startTime)
+                                ->orWhere('start_time', "{$startTime}:00");
+                        })
+                        ->whereIn('status', ['pending', 'confirmed'])
+                        ->lockForUpdate()
+                        ->count();
+
+                    if ($activeAppointmentsCount >= $matchingSlot['capacity']) {
+                        return ['success' => false, 'message' => 'Slot waktu tersebut sudah penuh.'];
+                    }
+
+                    $oldDateFormatted = $appointment->appointment_date ? $appointment->appointment_date->format('d/m/Y') : '-';
+                    $oldTimeFormatted = substr((string) $appointment->start_time, 0, 5);
+                    $newDateString = $targetDate->format('Y-m-d');
+                    $newEndTime = strlen($matchingSlot['end']) === 5 ? "{$matchingSlot['end']}:00" : $matchingSlot['end'];
+
+                    $timestamp = now('Asia/Jakarta')->format('d/m/Y H:i');
+                    $logText = "[{$timestamp}] Jadwal diubah oleh Admin dari {$oldDateFormatted} {$oldTimeFormatted} ke {$targetDate->format('d/m/Y')} {$startTime} WIB.";
+                    $updatedNotes = trim($appointment->admin_notes ? $appointment->admin_notes."\n".$logText : $logText);
+
+                    $appointment->update([
+                        'appointment_date' => $newDateString,
+                        'start_time' => "{$startTime}:00",
+                        'end_time' => $newEndTime,
+                        'admin_notes' => $updatedNotes,
+                    ]);
+
+                    return [
+                        'success' => true,
+                        'appointment' => $appointment,
+                        'dateDisplay' => $targetDate->translatedFormat('l, d F Y'),
+                        'timeDisplay' => $startTime,
+                        'branchName' => $branch->name,
+                    ];
+                });
+
+                if (! $result['success']) {
+                    Notification::make()
+                        ->title('Gagal Mengubah Jadwal')
+                        ->body($result['message'])
+                        ->danger()
+                        ->send();
+
+                    return;
+                }
+
+                $appt = $result['appointment'];
+                $waMessage = "Halo {$appt->patient_name}, jadwal janji temu Anda di {$result['branchName']} (Kode: {$appt->code}) telah disesuaikan menjadi {$result['dateDisplay']} pukul {$result['timeDisplay']} WIB. Silakan konfirmasi jika waktu ini sesuai bagi Anda. Terima kasih!";
+                $waUrl = 'https://wa.me/'.$appt->patient_phone.'?text='.rawurlencode($waMessage);
+
+                Notification::make()
+                    ->title('Jadwal Berhasil Diubah')
+                    ->body("Jadwal pasien {$appt->patient_name} berhasil dialihkan ke {$result['dateDisplay']} {$result['timeDisplay']} WIB. Email notifikasi otomatis dikirim.")
+                    ->success()
+                    ->actions([
+                        NotificationAction::make('send_wa_reschedule')
+                            ->label('Kirim WA Penyesuaian Jadwal')
+                            ->url($waUrl)
+                            ->openUrlInNewTab(),
+                    ])
+                    ->send();
+            });
+    }
+
+    /**
+     * Aksi pembatalan janji temu oleh admin dengan alasan opsional dan pembebasan slot otomatis.
+     */
+    public static function cancelAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('cancel')
+            ->label('Batalkan')
+            ->icon('heroicon-m-x-circle')
+            ->color('danger')
+            ->visible(fn (Appointment $record) => in_array($record->status, ['pending', 'confirmed'], true))
+            ->requiresConfirmation()
+            ->modalHeading(fn (Appointment $record) => "Batalkan Janji Temu: {$record->code}")
+            ->modalDescription('Slot akan otomatis dibebaskan dan email pembatalan dikirim ke pasien.')
+            ->form([
+                Forms\Components\Textarea::make('cancellation_reason')
+                    ->label('Alasan Pembatalan (Opsional)')
+                    ->rows(3)
+                    ->maxLength(500)
+                    ->placeholder('Contoh: Pasien berhalangan / Dokter berhalangan hadir'),
+            ])
+            ->modalSubmitActionLabel('Ya, Batalkan Janji')
+            ->action(function (Appointment $record, array $data) {
+                $reason = trim($data['cancellation_reason'] ?? '');
+                $timestamp = now('Asia/Jakarta')->format('d/m/Y H:i');
+                $logText = "[{$timestamp}] Dibatalkan oleh Admin".($reason !== '' ? ": {$reason}" : '.');
+                $updatedNotes = trim($record->admin_notes ? $record->admin_notes."\n".$logText : $logText);
+
+                $record->update([
+                    'status' => 'cancelled',
+                    'cancelled_by' => 'admin',
+                    'admin_notes' => $updatedNotes,
+                ]);
+
+                $branchName = $record->branch?->name ?? 'SAM Orthotic Prosthetic';
+                $waMessage = "Halo {$record->patient_name}, janji temu Anda di {$branchName} (Kode: {$record->code}) telah dibatalkan oleh pihak admin.".($reason !== '' ? " Alasan: {$reason}." : '').' Silakan hubungi kami kembali jika ingin membuat janji temu baru. Terima kasih.';
+                $waUrl = 'https://wa.me/'.$record->patient_phone.'?text='.rawurlencode($waMessage);
+
+                Notification::make()
+                    ->title('Janji Temu Dibatalkan')
+                    ->body('Slot janji temu telah otomatis dikosongkan. Email pembatalan telah dikirim ke pasien.')
+                    ->warning()
+                    ->actions([
+                        NotificationAction::make('send_wa_cancel')
+                            ->label('Kirim WA Pembatalan')
+                            ->url($waUrl)
+                            ->openUrlInNewTab(),
+                    ])
+                    ->send();
+            });
     }
 
     /**
@@ -316,7 +530,8 @@ class AppointmentResource extends Resource
 
         return match ($type) {
             'reminder' => "Halo {$record->patient_name}, kami mengingatkan kembali jadwal janji temu Anda di {$branch} pada {$date} pukul {$time} WIB. Mohon hadir 10 menit lebih awal. Terima kasih!",
-            'reschedule' => "Halo {$record->patient_name}, mengenai janji temu Anda di {$branch}, apakah Anda bersedia kami sesuaikan jadwal kunjungannya? Mohon informasikan ketersediaan waktu Anda.",
+            'reschedule' => "Halo {$record->patient_name}, mengenai janji temu Anda di {$branch} (Kode: {$record->code}), jadwal kunjungan Anda disesuaikan menjadi {$date} pukul {$time} WIB. Mohon konfirmasi kesediaan waktu Anda. Terima kasih!",
+            'cancel' => "Halo {$record->patient_name}, janji temu Anda di {$branch} (Kode: {$record->code}) telah dibatalkan. Silakan hubungi kami jika Anda memerlukan jadwal konsultasi pengganti. Terima kasih!",
             default => "Halo {$record->patient_name}, janji temu Anda di {$branch} pada {$date} pukul {$time} WIB telah kami konfirmasi. Silakan datang sesuai jadwal.",
         };
     }
