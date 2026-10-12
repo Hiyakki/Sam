@@ -406,6 +406,21 @@
                     </label>
                 </div>
 
+                <!-- Honeypot anti-bot field -->
+                <div style="display:none;" aria-hidden="true">
+                    <label for="website_hp">Jangan isi field ini jika Anda manusia:</label>
+                    <input type="text" name="website_hp" id="website_hp" value="" tabindex="-1" autocomplete="off">
+                </div>
+
+                @if (! empty(config('services.turnstile.key')))
+                    <div class="pt-3 flex justify-center">
+                        <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.key') }}" data-theme="dark"></div>
+                    </div>
+                    @push('scripts')
+                        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+                    @endpush
+                @endif
+
                 <!-- Field 12: Tombol Submit -->
                 <div class="pt-6">
                     <button type="submit"
@@ -420,7 +435,7 @@
                         <span x-text="isSubmitting ? 'Memproses Pendaftaran...' : 'Konfirmasi & Ajukan Janji Temu'"></span>
                     </button>
                     <p class="text-center text-[11px] text-white/70 mt-3">
-                        Setelah pengajuan, Anda akan menerima Kode Janji Temu untuk pelacakan dan perubahan jadwal.
+                        Setelah pengajuan berhasil, Anda akan menerima Kode Janji Temu sebagai tanda bukti reservasi.
                     </p>
                 </div>
             </div>

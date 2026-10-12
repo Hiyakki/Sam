@@ -42,4 +42,9 @@ return [
         'endpoint' => env('WA_GATEWAY_ENDPOINT', 'https://api.fonnte.com/send'),
     ],
 
+    'turnstile' => [
+        'key' => env('TURNSTILE_SITE_KEY', ''),
+        'secret' => env('TURNSTILE_SECRET_KEY', ''),
+    ],
+
 ];

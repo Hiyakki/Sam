@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Appointment;
+use App\Rules\TurnstileRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -26,9 +27,10 @@ class StoreAppointmentRequest extends FormRequest
             'service_id' => ['required', 'integer', Rule::exists('services', 'id')->where('is_active', true)],
             'appointment_date' => ['required', 'date_format:Y-m-d'],
             'start_time' => ['required', 'string'],
-            'prescription' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'prescription' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'mimetypes:image/jpeg,image/png,application/pdf', 'max:5120'],
             'privacy_consent' => ['required', 'accepted'],
             'website_hp' => ['nullable', 'string', 'max:0'], // Honeypot field (wajib kosong)
+            'cf-turnstile-response' => ['nullable', new TurnstileRule],
         ];
     }
 

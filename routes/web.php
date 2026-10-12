@@ -36,10 +36,11 @@ Route::post('/testimoni', [TestimonialController::class, 'store'])
 */
 Route::get('/appointment', [AppointmentController::class, 'index'])->name('appointment');
 Route::post('/appointment', [AppointmentController::class, 'store'])
-    ->middleware('throttle:5,1')
+    ->middleware('throttle:appointment.submission')
     ->name('appointment.store');
 
 Route::get('/janji/konfirmasi/{code}', [AppointmentController::class, 'confirmation'])
+    ->middleware('throttle:appointment.confirmation')
     ->name('appointment.confirmation');
 
 /*

@@ -240,11 +240,18 @@ class Phase6AppointmentFormTest extends TestCase
         $response->assertSessionHasErrors('patient_phone');
     }
 
-    public function test_appointment_manage_page_is_accessible_via_code(): void
+    public function test_patient_manage_route_does_not_exist(): void
+    {
+        // Keputusan produk: Pasien tidak punya aksi lanjutan / kelola janji via URL
+        $response = $this->get('/janji/SAMTESTCODE123');
+        $response->assertStatus(404);
+    }
+
+    public function test_confirmation_page_has_no_action_buttons_except_contact_info(): void
     {
         $targetDate = Carbon::now('Asia/Jakarta')->next(Carbon::MONDAY)->format('Y-m-d');
         $appointment = Appointment::create([
-            'code' => 'SAMMANAGE01',
+            'code' => 'SAMCONFIRM01',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $targetDate,
@@ -258,105 +265,36 @@ class Phase6AppointmentFormTest extends TestCase
             'status' => 'confirmed',
         ]);
 
-        $response = $this->get(route('appointment.manage', $appointment->code));
+        $response = $this->get(route('appointment.confirmation', $appointment->code));
 
         $response->assertStatus(200);
-        $response->assertSee('SAMMANAGE01');
+        $response->assertSee('SAMCONFIRM01');
         $response->assertSee('Bambang Tri');
-        $response->assertSee('Ubah Jadwal Kunjungan');
-        $response->assertSee('Batalkan Janji');
+        // Tidak boleh ada tombol kelola / ubah / batal untuk pasien
+        $response->assertDontSee('Ubah Jadwal');
+        $response->assertDontSee('Batalkan Janji');
+        // Harus ada tombol / info kontak WA cabang
+        $response->assertSee('Konfirmasi via WhatsApp');
     }
 
-    public function test_patient_can_cancel_appointment(): void
+    public function test_honeypot_rejects_bot_submissions(): void
     {
-        $targetDate = Carbon::now('Asia/Jakarta')->next(Carbon::TUESDAY)->format('Y-m-d');
-        $appointment = Appointment::create([
-            'code' => 'SAMCANCEL01',
+        $targetDate = Carbon::now('Asia/Jakarta')->next(Carbon::MONDAY)->format('Y-m-d');
+
+        $response = $this->post(route('appointment.store'), [
+            'patient_name' => 'Spam Bot',
+            'patient_email' => 'bot@example.com',
+            'patient_phone' => '081234567890',
+            'patient_age' => 30,
+            'complaint' => 'Buy cheap medications',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $targetDate,
-            'start_time' => '08:00:00',
-            'end_time' => '09:00:00',
-            'patient_name' => 'Dewi Persik',
-            'patient_email' => 'dewi@example.com',
-            'patient_phone' => '628123456788',
-            'patient_age' => 32,
-            'complaint' => 'Batal periksa',
-            'status' => 'pending',
-        ]);
-
-        $response = $this->post(route('appointment.cancel', $appointment->code));
-
-        $response->assertRedirect(route('appointment.manage', $appointment->code));
-        $this->assertDatabaseHas('appointments', [
-            'id' => $appointment->id,
-            'status' => 'cancelled',
-            'cancelled_by' => 'patient',
-        ]);
-    }
-
-    public function test_patient_can_reschedule_appointment_before_cutoff(): void
-    {
-        // Janji masih 5 hari lagi (> 24 jam)
-        $oldDate = Carbon::now('Asia/Jakarta')->addDays(5)->next(Carbon::WEDNESDAY)->format('Y-m-d');
-        $newDate = Carbon::now('Asia/Jakarta')->addDays(6)->next(Carbon::THURSDAY)->format('Y-m-d');
-
-        $appointment = Appointment::create([
-            'code' => 'SAMRESCH01',
-            'branch_id' => $this->branch->id,
-            'service_id' => $this->service->id,
-            'appointment_date' => $oldDate,
-            'start_time' => '08:00:00',
-            'end_time' => '09:00:00',
-            'patient_name' => 'Eko Prasetyo',
-            'patient_email' => 'eko@example.com',
-            'patient_phone' => '628123456787',
-            'patient_age' => 29,
-            'complaint' => 'Ganti jadwal',
-            'status' => 'confirmed',
-        ]);
-
-        $response = $this->post(route('appointment.reschedule', $appointment->code), [
-            'appointment_date' => $newDate,
-            'start_time' => '10:00',
-        ]);
-
-        $response->assertRedirect(route('appointment.manage', $appointment->code));
-        $this->assertDatabaseHas('appointments', [
-            'id' => $appointment->id,
-            'appointment_date' => $newDate.' 00:00:00',
-            'start_time' => '10:00:00',
-        ]);
-    }
-
-    public function test_reschedule_is_rejected_within_min_hours(): void
-    {
-        // Set janji temu 5 jam lagi (< 24 jam batas minimal reschedule)
-        $now = Carbon::parse('2026-10-15 08:00:00', 'Asia/Jakarta');
-        Carbon::setTestNow($now);
-
-        $appointment = Appointment::create([
-            'code' => 'SAMRESCH02',
-            'branch_id' => $this->branch->id,
-            'service_id' => $this->service->id,
-            'appointment_date' => '2026-10-15',
-            'start_time' => '11:00:00', // Hanya 3 jam dari 'now'
-            'end_time' => '12:00:00',
-            'patient_name' => 'Terlambat Reschedule',
-            'patient_email' => 'late@example.com',
-            'patient_phone' => '628123456786',
-            'patient_age' => 42,
-            'complaint' => 'Ingin ubah mendadak',
-            'status' => 'confirmed',
-        ]);
-
-        $response = $this->post(route('appointment.reschedule', $appointment->code), [
-            'appointment_date' => '2026-10-16',
             'start_time' => '08:00',
+            'privacy_consent' => '1',
+            'website_hp' => 'I am a spam bot', // Terisi honeypot
         ]);
 
-        $response->assertSessionHasErrors('reschedule');
-
-        Carbon::setTestNow();
+        $response->assertSessionHasErrors('website_hp');
     }
 }
