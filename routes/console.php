@@ -23,3 +23,11 @@ Schedule::command('sam:purge-old-data')
     ->sundays()
     ->at('02:00')
     ->timezone('Asia/Jakarta');
+
+Schedule::command('backup:clean')
+    ->dailyAt('01:00')
+    ->timezone('Asia/Jakarta');
+
+Schedule::command('backup:run')
+    ->dailyAt('01:30')
+    ->timezone('Asia/Jakarta');
