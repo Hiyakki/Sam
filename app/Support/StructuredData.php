@@ -153,13 +153,14 @@ class StructuredData
         }
 
         $dayMap = [
-            1 => 'https://schema.org/Monday',
-            2 => 'https://schema.org/Tuesday',
-            3 => 'https://schema.org/Wednesday',
-            4 => 'https://schema.org/Thursday',
-            5 => 'https://schema.org/Friday',
-            6 => 'https://schema.org/Saturday',
-            7 => 'https://schema.org/Sunday',
+            1 => 'Monday',
+            2 => 'Tuesday',
+            3 => 'Wednesday',
+            4 => 'Thursday',
+            5 => 'Friday',
+            6 => 'Saturday',
+            7 => 'Sunday',
+            0 => 'Sunday',
         ];
 
         $specs = [];

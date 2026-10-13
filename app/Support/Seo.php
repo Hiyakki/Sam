@@ -303,18 +303,43 @@ class Seo
 
     public function forProduct(Product $product): self
     {
-        $shortFunction = filled($product->function) ? (' - '.Str::limit($product->function, 35)) : '';
-        $defaultTitle = $product->name.$shortFunction.' | '.$this->siteName;
+        $brandSuffix = ' | '.$this->siteName;
+        $maxLen = 65;
+        $availableForNameAndFunction = $maxLen - mb_strlen($brandSuffix);
+
+        $shortFunction = '';
+        if (filled($product->function)) {
+            $remaining = $availableForNameAndFunction - mb_strlen($product->name) - 3;
+            if ($remaining >= 12) {
+                $shortFunction = ' - '.Str::limit($product->function, $remaining, '');
+            }
+        }
+
+        $fullName = $product->name.$shortFunction;
+        if (mb_strlen($fullName) > $availableForNameAndFunction) {
+            $fullName = Str::limit($product->name, $availableForNameAndFunction, '');
+        }
+
+        $defaultTitle = $fullName.$brandSuffix;
         $title = filled($product->meta_title) ? $product->meta_title : $defaultTitle;
 
-        $descSource = $product->meta_description
-            ?: ($product->function ? ($product->function.'. '.($product->indication ?: strip_tags((string) $product->description))) : ($product->indication ?: strip_tags((string) $product->description)));
+        if (filled($product->meta_description)) {
+            $descSource = $product->meta_description;
+        } else {
+            $parts = array_filter([
+                $product->name,
+                $product->function,
+                $product->indication,
+                strip_tags((string) $product->description),
+            ]);
+            $descText = implode('. ', $parts);
+            if (mb_strlen($descText) < 120) {
+                $descText .= '. Fabrikasi kustom presisi di SAM Orthotic Prosthetic.';
+            }
+            $descSource = $descText;
+        }
 
-        $description = self::cleanSnippet(
-            $descSource ?: ('Alat bantu gerak '.$product->name.' kustom untuk pemulihan fungsi tubuh optimal dan kenyamanan harian Anda.'),
-            160,
-            120
-        );
+        $description = self::cleanSnippet($descSource, 160, 120);
 
         $imageUrl = $product->photo ? url('storage/'.ltrim($product->photo, '/')) : null;
 

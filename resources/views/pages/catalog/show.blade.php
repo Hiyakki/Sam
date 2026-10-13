@@ -126,7 +126,7 @@
                 <!-- Deskripsi Lengkap -->
                 @if($product->description)
                     <div class="space-y-2">
-                        <h3 class="text-sm font-bold uppercase tracking-wider text-primary">Deskripsi Alat</h3>
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-primary">Deskripsi Alat</h2>
                         <div class="prose prose-sm max-w-none text-text-muted leading-relaxed">
                             {!! $product->description !!}
                         </div>
@@ -167,9 +167,9 @@
         <!-- Bagian Testimoni Terkait Produk -->
         @if($product->testimonials && $product->testimonials->isNotEmpty())
             <div class="mt-16 pt-10 border-t border-gray-200">
-                <h3 class="font-bold text-xl font-['Playfair_Display'] text-primary mb-6">
+                <h2 class="font-bold text-xl font-['Playfair_Display'] text-primary mb-6">
                     Pengalaman Pasien dengan {{ $product->name }}
-                </h3>
+                </h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     @foreach($product->testimonials as $testimonial)
                         <div class="bg-surface-soft rounded-2xl p-6 border border-gray-200 flex flex-col justify-between">
@@ -199,12 +199,12 @@
         @if($relatedProducts && $relatedProducts->isNotEmpty())
             <div class="mt-16 pt-10 border-t border-gray-200">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="font-bold text-xl font-['Playfair_Display'] text-primary">
+                    <h2 class="font-bold text-xl font-['Playfair_Display'] text-primary">
                         Alat Lain dalam Kategori Ini
-                    </h3>
+                    </h2>
                     @if($product->category)
                         <a href="{{ route('catalog.index', ['kategori' => $product->category->slug]) }}"
-                           class="text-xs font-semibold text-primary hover:text-accent transition-colors">
+                            class="text-xs font-semibold text-primary hover:text-accent transition-colors">
                             Lihat Semua &rarr;
                         </a>
                     @endif
@@ -223,9 +223,9 @@
                                     <span class="text-xs text-primary font-medium">SAM Orthotic</span>
                                 @endif
                             </div>
-                            <h4 class="font-bold text-sm text-primary group-hover:text-accent transition-colors line-clamp-1">
+                            <h3 class="font-bold text-sm text-primary group-hover:text-accent transition-colors line-clamp-1">
                                 {{ $related->name }}
-                            </h4>
+                            </h3>
                             <p class="text-[11px] text-text-muted mt-1 line-clamp-2">
                                 {{ $related->function ?: Str::limit(strip_tags($related->description), 60) }}
                             </p>

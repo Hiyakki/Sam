@@ -38,15 +38,17 @@ class SeoRedirectMiddleware
         }
 
         // 2. Normalisasi trailing slash dan huruf kapital dalam satu lompatan
-        $hasTrailingSlash = $path !== '/' && str_ends_with($path, '/');
-        $trimmedPath = $hasTrailingSlash ? rtrim($path, '/') : $path;
+        $rawUriPath = parse_url($uri, PHP_URL_PATH) ?? $path;
+        $hasTrailingSlash = ($path !== '/' && str_ends_with($path, '/'))
+            || ($rawUriPath !== '/' && str_ends_with($rawUriPath, '/'));
+        $trimmedPath = $hasTrailingSlash ? rtrim($rawUriPath, '/') : $path;
 
         // Cek apakah ada huruf kapital pada path
         $hasUppercase = (bool) preg_match('/[A-Z]/', $trimmedPath);
         $normalizedPath = $hasUppercase ? strtolower($trimmedPath) : $trimmedPath;
 
         // Cek kembali tabel redirects untuk normalizedPath jika berbeda
-        if ($normalizedPath !== $path) {
+        if ($normalizedPath !== $path || $hasTrailingSlash || $hasUppercase) {
             $normalizedRedirect = $this->findRedirect($normalizedPath, $normalizedPath);
             if ($normalizedRedirect) {
                 return redirect()->to(url($normalizedRedirect->target_path), $normalizedRedirect->status_code ?? 301);

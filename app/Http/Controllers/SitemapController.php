@@ -140,7 +140,7 @@ class SitemapController extends Controller
     public function robots(): Response
     {
         $sitemapUrl = url('/sitemap.xml');
-        $isProduction = app()->environment('production');
+        $isProduction = app()->environment('production') || config('app.env') === 'production';
 
         $commonDirectives = "User-agent: *\n"
             ."Disallow: /kelola-sam/\n"

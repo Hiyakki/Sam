@@ -38,7 +38,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <div>
-                <h4 class="text-base font-bold text-green-900 mb-1">Berhasil Terkirim</h4>
+                <p class="text-base font-bold text-green-900 mb-1">Berhasil Terkirim</p>
                 <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
             </div>
         </div>
@@ -49,7 +49,7 @@
         <div class="max-w-3xl mx-auto bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl mb-12 flex items-start gap-4 shadow-sm">
             <svg class="w-6 h-6 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             <div>
-                <h4 class="text-base font-bold text-red-900 mb-1">Gagal Mengirim Ulasan</h4>
+                <p class="text-base font-bold text-red-900 mb-1">Gagal Mengirim Ulasan</p>
                 <p class="text-sm font-medium text-red-800">Mohon cek kembali form Anda (klik "Tulis Ulasan Anda" untuk memperbaiki isian yang salah).</p>
             </div>
         </div>
@@ -57,6 +57,10 @@
 
         <!-- List Testimoni -->
         @if($testimonials->count() > 0)
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold font-['Playfair_Display'] text-primary mb-2">Ulasan Pasien Terverifikasi</h2>
+                <p class="text-sm text-text-muted">Kisah nyata dari pasien yang telah merasakan manfaat alat kami.</p>
+            </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
                 @foreach($testimonials as $testimonial)
                     <x-testimonial-card :testimonial="$testimonial" />

@@ -177,9 +177,9 @@
 
                 <!-- Col 2: Quick Links -->
                 <div>
-                    <h4 class="text-base font-semibold font-['Playfair_Display'] text-white mb-4 tracking-wide">
+                    <p class="text-base font-semibold font-['Playfair_Display'] text-white mb-4 tracking-wide">
                         Menu Utama
-                    </h4>
+                    </p>
                     <ul class="space-y-2.5 text-sm text-white/80">
                         <li><a href="{{ route('home') }}" class="hover:text-white transition-colors">Beranda</a></li>
                         <li><a href="{{ route('about') }}" class="hover:text-white transition-colors">Tentang Kami</a></li>
@@ -193,9 +193,9 @@
 
                 <!-- Col 3: Layanan Kami -->
                 <div>
-                    <h4 class="text-base font-semibold font-['Playfair_Display'] text-white mb-4 tracking-wide">
+                    <p class="text-base font-semibold font-['Playfair_Display'] text-white mb-4 tracking-wide">
                         Layanan Unggulan
-                    </h4>
+                    </p>
                     <ul class="space-y-2.5 text-sm text-white/80">
                         <li>Konsultasi Masalah Gerak & Postur</li>
                         <li>Fitting & Penyesuaian Alat</li>
@@ -207,9 +207,9 @@
 
                 <!-- Col 4: Kontak & Operasional -->
                 <div class="space-y-4">
-                    <h4 class="text-base font-semibold font-['Playfair_Display'] text-white mb-4 tracking-wide">
+                    <p class="text-base font-semibold font-['Playfair_Display'] text-white mb-4 tracking-wide">
                         Kontak & Lokasi
-                    </h4>
+                    </p>
                     <ul class="space-y-3 text-sm text-white/80">
                         <li class="flex items-start gap-2.5">
                             <svg class="w-5 h-5 text-accent shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

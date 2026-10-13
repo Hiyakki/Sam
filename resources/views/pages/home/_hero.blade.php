@@ -120,9 +120,9 @@
                                 <span class="inline-block px-3 py-1 rounded-full bg-white text-xs font-semibold text-primary tracking-wider uppercase border border-gray-200 shadow-2xs">
                                     Workshop & Klinik
                                 </span>
-                                <h3 class="text-2xl font-bold font-['Playfair_Display'] text-primary">
+                                <p class="text-2xl font-bold font-['Playfair_Display'] text-primary">
                                     Presisi Ergonomis untuk Mobilitas Pasien
-                                </h3>
+                                </p>
                                 <p class="text-xs sm:text-sm text-text-muted leading-relaxed">
                                     Setiap alat diproduksi melalui pengukuran detail dan uji coba fitting langsung.
                                 </p>
