@@ -20,11 +20,34 @@ class Product extends Model
         'description',
         'function',
         'indication',
+        'meta_title',
+        'meta_description',
         'photo',
         'is_active',
         'sort_order',
         'price',
     ];
+
+    protected static function booted(): void
+    {
+        static::updating(function (Product $product) {
+            if ($product->isDirty('slug') && $product->getOriginal('slug')) {
+                $oldPath = '/katalog/' . $product->getOriginal('slug');
+                $newPath = '/katalog/' . $product->slug;
+
+                if ($oldPath !== $newPath) {
+                    Redirect::updateOrCreate(
+                        ['source_path' => $oldPath],
+                        ['target_path' => $newPath, 'status_code' => 301]
+                    );
+
+                    // Pastikan tidak ada redirect chain (hanya 1 lompatan)
+                    Redirect::where('target_path', $oldPath)
+                        ->update(['target_path' => $newPath]);
+                }
+            }
+        });
+    }
 
     protected function casts(): array
     {

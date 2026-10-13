@@ -86,6 +86,34 @@ class ProductResource extends Resource
                         ->toolbarButtons(['bold', 'italic', 'bulletList', 'orderedList', 'link', 'undo', 'redo']),
                 ]),
 
+                Forms\Components\Section::make('Pengaturan SEO & Pratinjau Google')
+                    ->description('Optimasi meta tag untuk mesin pencari. Kosongkan untuk menggunakan formulasi otomatis.')
+                    ->schema([
+                        Forms\Components\TextInput::make('meta_title')
+                            ->label('Meta Title')
+                            ->placeholder(fn (Forms\Get $get) => ($get('name') ?: 'Nama Produk') . ' - SAM Orthotic Prosthetic')
+                            ->maxLength(70)
+                            ->live(debounce: 400)
+                            ->helperText('Rekomendasi: 50–60 karakter. Teks judul biru di hasil pencarian Google.'),
+
+                        Forms\Components\Textarea::make('meta_description')
+                            ->label('Meta Description')
+                            ->placeholder('Deskripsi ringkas produk untuk cuplikan pencarian Google (120–160 karakter).')
+                            ->rows(3)
+                            ->maxLength(170)
+                            ->live(debounce: 400)
+                            ->helperText('Rekomendasi: 120–160 karakter. Hindari klaim berlebihan yang tidak dapat dibuktikan.'),
+
+                        Forms\Components\ViewField::make('google_preview')
+                            ->label('Pratinjau Hasil Pencarian Google')
+                            ->view('filament.components.google-preview')
+                            ->viewData(fn (Forms\Get $get, ?Product $record) => [
+                                'title' => $get('meta_title') ?: (($get('name') ?: 'Nama Produk') . ' - ' . ($get('function') ?: 'Alat Bantu Gerak') . ' | SAM Orthotic Prosthetic'),
+                                'url' => url('/katalog/' . ($get('slug') ?: 'slug-produk')),
+                                'description' => $get('meta_description') ?: ($get('function') ? ($get('function') . '. ' . strip_tags((string) $get('description'))) : strip_tags((string) $get('description'))),
+                            ]),
+                    ])->collapsible(),
+
                 Forms\Components\Section::make('Galeri Foto Tambahan')->schema([
                     Forms\Components\Repeater::make('images')
                         ->label('')
@@ -159,6 +187,15 @@ class ProductResource extends Resource
                     ->label('Kategori')
                     ->badge()
                     ->color('gray'),
+                Tables\Columns\TextColumn::make('content_quality')
+                    ->label('Konten')
+                    ->badge()
+                    ->state(function (Product $record) {
+                        $descLength = strlen(trim(strip_tags((string) $record->description)));
+
+                        return $descLength < 40 ? 'Kurang (<40)' : 'Lengkap';
+                    })
+                    ->color(fn (string $state) => $state === 'Lengkap' ? 'success' : 'warning'),
                 Tables\Columns\ToggleColumn::make('is_active')
                     ->label('Aktif'),
                 Tables\Columns\TextColumn::make('updated_at')
@@ -173,6 +210,12 @@ class ProductResource extends Resource
                     ->label('Kategori')
                     ->options(fn () => self::categoryOptions()),
                 Tables\Filters\TernaryFilter::make('is_active')->label('Status Aktif'),
+                Tables\Filters\Filter::make('thin_content')
+                    ->label('Konten kurang (< 40 karakter)')
+                    ->query(fn (Builder $query) => $query->where(function ($q) {
+                        $q->whereNull('description')
+                            ->orWhereRaw('CHAR_LENGTH(description) < 40');
+                    })),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([

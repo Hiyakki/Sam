@@ -62,6 +62,23 @@ class SiteSettings extends Page implements HasForms
         'general_appointment_reschedule_min_hours' => ['general.appointment_reschedule_min_hours', 'text', 'general'],
         'general_slot_buffer_minutes' => ['general.slot_buffer_minutes', 'text', 'general'],
         'general_gallery' => ['general.gallery', 'json', 'general'],
+
+        // Pengaturan SEO
+        'seo_home_title' => ['seo.home_title', 'text', 'seo'],
+        'seo_home_description' => ['seo.home_description', 'text', 'seo'],
+        'seo_about_title' => ['seo.about_title', 'text', 'seo'],
+        'seo_about_description' => ['seo.about_description', 'text', 'seo'],
+        'seo_catalog_title' => ['seo.catalog_title', 'text', 'seo'],
+        'seo_catalog_description' => ['seo.catalog_description', 'text', 'seo'],
+        'seo_faq_title' => ['seo.faq_title', 'text', 'seo'],
+        'seo_faq_description' => ['seo.faq_description', 'text', 'seo'],
+        'seo_testimonials_title' => ['seo.testimonials_title', 'text', 'seo'],
+        'seo_testimonials_description' => ['seo.testimonials_description', 'text', 'seo'],
+        'seo_appointment_title' => ['seo.appointment_title', 'text', 'seo'],
+        'seo_appointment_description' => ['seo.appointment_description', 'text', 'seo'],
+        'seo_privacy_title' => ['seo.privacy_title', 'text', 'seo'],
+        'seo_privacy_description' => ['seo.privacy_description', 'text', 'seo'],
+        'seo_default_og_image' => ['seo.default_og_image', 'text', 'seo'],
     ];
 
     public function mount(): void
@@ -278,6 +295,64 @@ class SiteSettings extends Page implements HasForms
                                 ->label('Isi Kebijakan Privasi')
                                 ->required()
                                 ->toolbarButtons(['bold', 'italic', 'h2', 'h3', 'bulletList', 'orderedList', 'link', 'undo', 'redo']),
+                        ]),
+
+                    Forms\Components\Tabs\Tab::make('SEO & Metadata')
+                        ->icon('heroicon-m-magnifying-glass')
+                        ->schema([
+                            Forms\Components\Section::make('Meta Tag Beranda (Home)')
+                                ->description('Judul dan ringkasan pencarian untuk halaman utama.')
+                                ->schema([
+                                    Forms\Components\TextInput::make('seo_home_title')
+                                        ->label('Meta Title Home')
+                                        ->placeholder('Kaki Palsu, Tangan Palsu & Orthosis | SAM Orthotic Prosthetic')
+                                        ->maxLength(70)
+                                        ->helperText('Rekomendasi 50–60 karakter.'),
+                                    Forms\Components\Textarea::make('seo_home_description')
+                                        ->label('Meta Description Home')
+                                        ->placeholder('Layanan pembuatan kaki palsu, tangan palsu, dan penyangga tubuh (orthosis) presisi kustom sejak 2014.')
+                                        ->rows(2)
+                                        ->maxLength(170)
+                                        ->helperText('Rekomendasi 120–160 karakter tanpa klaim berlebihan.'),
+                                ])->columns(1),
+
+                            Forms\Components\Section::make('Meta Tag Halaman Statis Lainnya')
+                                ->schema([
+                                    Forms\Components\Grid::make(2)->schema([
+                                        Forms\Components\TextInput::make('seo_about_title')->label('Title About Us')->maxLength(70),
+                                        Forms\Components\Textarea::make('seo_about_description')->label('Description About Us')->rows(2)->maxLength(170),
+
+                                        Forms\Components\TextInput::make('seo_catalog_title')->label('Title Katalog')->maxLength(70),
+                                        Forms\Components\Textarea::make('seo_catalog_description')->label('Description Katalog')->rows(2)->maxLength(170),
+
+                                        Forms\Components\TextInput::make('seo_faq_title')->label('Title FAQ')->maxLength(70),
+                                        Forms\Components\Textarea::make('seo_faq_description')->label('Description FAQ')->rows(2)->maxLength(170),
+
+                                        Forms\Components\TextInput::make('seo_testimonials_title')->label('Title Testimoni')->maxLength(70),
+                                        Forms\Components\Textarea::make('seo_testimonials_description')->label('Description Testimoni')->rows(2)->maxLength(170),
+
+                                        Forms\Components\TextInput::make('seo_appointment_title')->label('Title Form Janji Temu')->maxLength(70),
+                                        Forms\Components\Textarea::make('seo_appointment_description')->label('Description Form Janji Temu')->rows(2)->maxLength(170),
+
+                                        Forms\Components\TextInput::make('seo_privacy_title')->label('Title Kebijakan Privasi')->maxLength(70),
+                                        Forms\Components\Textarea::make('seo_privacy_description')->label('Description Kebijakan Privasi')->rows(2)->maxLength(170),
+                                    ]),
+                                ])->collapsible(),
+
+                            Forms\Components\Section::make('Default Open Graph Image')
+                                ->description('Gambar default ketika link dibagikan ke WhatsApp, Facebook, atau Twitter jika halaman tidak memiliki gambar khusus (1200x630 px).')
+                                ->schema([
+                                    Forms\Components\FileUpload::make('seo_default_og_image')
+                                        ->label('Default OG Image')
+                                        ->image()
+                                        ->disk('public')
+                                        ->directory('seo')
+                                        ->imageResizeMode('contain')
+                                        ->imageResizeTargetWidth('1200')
+                                        ->imageResizeTargetHeight('630')
+                                        ->maxSize(3072)
+                                        ->helperText('Rekomendasi ukuran: 1200 x 630 pixel.'),
+                                ]),
                         ]),
                 ])->persistTabInQueryString(),
             ]);

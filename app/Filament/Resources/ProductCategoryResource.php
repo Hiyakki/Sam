@@ -32,7 +32,7 @@ class ProductCategoryResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make()->schema([
+            Forms\Components\Section::make('Informasi Kategori')->schema([
                 Forms\Components\Select::make('parent_id')
                     ->label('Induk Kategori')
                     ->placeholder('— Kategori utama —')
@@ -65,7 +65,41 @@ class ProductCategoryResource extends Resource
                     ->alphaDash()
                     ->unique(ignoreRecord: true)
                     ->maxLength(120),
+
+                Forms\Components\Textarea::make('intro_text')
+                    ->label('Deskripsi Pengantar Kategori (Intro Content)')
+                    ->placeholder('Tulis deskripsi mendalam mengenai kategori alat bantu ini (fungsi klinis, jenis-jenis, manfaat mobilitas). Rekomendasi minimal ~100 kata agar halaman katalog informatif dan bernilai tinggi.')
+                    ->rows(4)
+                    ->helperText('Konten pengantar ini tampil di atas daftar produk kategori untuk mencegah thin content.'),
             ]),
+
+            Forms\Components\Section::make('Pengaturan SEO & Pratinjau Google')
+                ->description('Optimasi meta tag untuk mesin pencari. Kosongkan untuk menggunakan formulasi otomatis.')
+                ->schema([
+                    Forms\Components\TextInput::make('meta_title')
+                        ->label('Meta Title')
+                        ->placeholder(fn (Forms\Get $get) => ($get('name') ?: 'Nama Kategori') . ' | Katalog | SAM Orthotic Prosthetic')
+                        ->maxLength(70)
+                        ->live(debounce: 400)
+                        ->helperText('Rekomendasi: 50–60 karakter.'),
+
+                    Forms\Components\Textarea::make('meta_description')
+                        ->label('Meta Description')
+                        ->placeholder('Deskripsi ringkas kategori untuk cuplikan pencarian Google (120–160 karakter).')
+                        ->rows(3)
+                        ->maxLength(170)
+                        ->live(debounce: 400)
+                        ->helperText('Rekomendasi: 120–160 karakter.'),
+
+                    Forms\Components\ViewField::make('google_preview')
+                        ->label('Pratinjau Hasil Pencarian Google')
+                        ->view('filament.components.google-preview')
+                        ->viewData(fn (Forms\Get $get, ?ProductCategory $record) => [
+                            'title' => $get('meta_title') ?: (($get('name') ?: 'Kategori') . ' | Katalog | SAM Orthotic Prosthetic'),
+                            'url' => url('/katalog?kategori=' . ($get('slug') ?: 'slug-kategori')),
+                            'description' => $get('meta_description') ?: strip_tags((string) $get('intro_text')),
+                        ]),
+                ])->collapsible(),
         ]);
     }
 

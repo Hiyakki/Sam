@@ -16,8 +16,31 @@ class ProductCategory extends Model
         'parent_id',
         'name',
         'slug',
+        'intro_text',
+        'meta_title',
+        'meta_description',
         'sort_order',
     ];
+
+    protected static function booted(): void
+    {
+        static::updating(function (ProductCategory $category) {
+            if ($category->isDirty('slug') && $category->getOriginal('slug')) {
+                $oldPath = '/katalog?kategori=' . $category->getOriginal('slug');
+                $newPath = '/katalog?kategori=' . $category->slug;
+
+                if ($oldPath !== $newPath) {
+                    Redirect::updateOrCreate(
+                        ['source_path' => $oldPath],
+                        ['target_path' => $newPath, 'status_code' => 301]
+                    );
+
+                    Redirect::where('target_path', $oldPath)
+                        ->update(['target_path' => $newPath]);
+                }
+            }
+        });
+    }
 
     protected function casts(): array
     {

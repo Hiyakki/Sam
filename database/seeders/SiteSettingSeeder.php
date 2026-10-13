@@ -143,6 +143,92 @@ class SiteSettingSeeder extends Seeder
                 'type' => 'text',
                 'group' => 'general',
             ],
+
+            // === SEO ===
+            [
+                'key' => 'seo.home_title',
+                'value' => 'Kaki Palsu, Tangan Palsu & Orthosis | SAM Orthotic Prosthetic',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.home_description',
+                'value' => 'Layanan pembuatan kaki palsu, tangan palsu, dan alat penyangga tubuh (orthosis) presisi sejak 2014. Konsultasikan kebutuhan mobilitas Anda bersama kami.',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.about_title',
+                'value' => 'Tentang SAM | SAM Orthotic Prosthetic',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.about_description',
+                'value' => 'Mengenal SAM Orthotic Prosthetic, pusat perancangan dan fabrikasi kustom alat bantu gerak tubuh ortotik dan prostetik tepercaya sejak 2014.',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.catalog_title',
+                'value' => 'Katalog Alat Orthotic & Prosthetic | SAM Orthotic Prosthetic',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.catalog_description',
+                'value' => 'Daftar produk kaki palsu, tangan palsu, korset tulang belakang, dan brace kustom dengan spesifikasi dan indikasi medis lengkap.',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.faq_title',
+                'value' => 'Pertanyaan Umum | SAM Orthotic Prosthetic',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.faq_description',
+                'value' => 'Jawaban seputar prosedur pemesanan, resep dokter, proses fitting, durasi pembuatan, dan perawatan alat bantu gerak ortotik prostetik.',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.testimonials_title',
+                'value' => 'Testimoni Pasien | SAM Orthotic Prosthetic',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.testimonials_description',
+                'value' => 'Pengalaman dan cerita pasien dalam menggunakan alat ortotik dan prostetik kustom dari SAM Orthotic Prosthetic.',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.appointment_title',
+                'value' => 'Buat Janji Konsultasi | SAM Orthotic Prosthetic',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.appointment_description',
+                'value' => 'Pilih cabang dan jadwal konsultasi tatap muka bersama tenaga ahli ortotik prostetik kami secara langsung.',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.privacy_title',
+                'value' => 'Kebijakan Privasi | SAM Orthotic Prosthetic',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
+            [
+                'key' => 'seo.privacy_description',
+                'value' => 'Kebijakan perlindungan data pribadi dan resep medis pasien di platform SAM Orthotic Prosthetic.',
+                'type' => 'text',
+                'group' => 'seo',
+            ],
         ];
 
         foreach ($settings as $setting) {
