@@ -1,7 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Pendaftaran Janji Temu & Konsultasi - SAM Orthotic Prosthetic')
-@section('meta_description', 'Reservasi jadwal konsultasi, pemeriksaan biomekanik, dan fitting alat ortotik prostetik di cabang SAM terdekat.')
+@php
+    $seoData = \App\Support\Seo::make($settings ?? null)->forAppointment();
+@endphp
+
+@section('title', $seoData->getTitle())
+@section('meta_description', $seoData->getDescription())
+@section('canonical_url', $seoData->getCanonical())
 
 @section('content')
 <!-- Header Banner -->

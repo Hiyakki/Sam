@@ -1,30 +1,46 @@
 @extends('layouts.app')
 
-@section('title', ($currentCategory ? $currentCategory->name . ' - ' : '') . 'Katalog Alat Ortotik & Prostetik - SAM')
-@section('meta_description', 'Jelajahi katalog alat ortotik dan prostetik kustom SAM Orthotic Prosthetic. Dibuat presisi sesuai anatomi dan kebutuhan mobilitas Anda.')
+@php
+    $page = request()->query('page') ? (int) request()->query('page') : 1;
+    $seoData = \App\Support\Seo::make($settings)->forCatalog($currentCategory, $search, $page);
+@endphp
+
+@section('title', $seoData->getTitle())
+@section('meta_description', $seoData->getDescription())
+@section('canonical_url', $seoData->getCanonical())
+@section('meta_robots', $seoData->getRobots())
 
 @section('content')
-<!-- Header Banner -->
-<div class="bg-gradient-to-b from-surface-soft via-background to-background py-10 sm:py-14 border-b border-gray-200">
+<!-- Breadcrumbs & Header Banner -->
+<div class="bg-gradient-to-b from-surface-soft via-background to-background py-8 sm:py-12 border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-4">
+            <x-breadcrumb :items="$seoData->getBreadcrumbs()" />
+        </div>
+
         <div class="max-w-3xl">
             <span class="text-xs font-bold uppercase tracking-widest text-primary bg-white px-3 py-1 rounded-full border border-gray-200 inline-block shadow-2xs">
                 Katalog Produk Medis
             </span>
             <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-['Playfair_Display'] text-primary mt-3 tracking-tight">
-                @if($currentCategory)
+                @if($search)
+                    Pencarian Produk: "{{ $search }}"
+                @elseif($currentCategory)
                     {{ $currentCategory->name }}
                 @else
                     Katalog Alat Ortotik & Prostetik
                 @endif
             </h1>
-            <p class="text-sm sm:text-base text-text-muted mt-3 leading-relaxed">
-                @if($currentCategory && $currentCategory->description)
-                    {{ $currentCategory->description }}
+
+            <div class="text-sm sm:text-base text-text-muted mt-3 leading-relaxed prose prose-sm max-w-none">
+                @if($currentCategory && filled($currentCategory->intro_text))
+                    <p>{{ $currentCategory->intro_text }}</p>
+                @elseif($search)
+                    <p>Menampilkan hasil pencarian alat ortotik dan prostetik untuk kata kunci "{{ e($search) }}".</p>
                 @else
-                    Setiap alat bantu gerak dirancang dan difabrikasi secara kustom sesuai asesmen klinis serta ukuran anatomi tubuh pasien untuk kenyamanan dan mobilitas maksimal.
+                    <p>Setiap alat bantu gerak dirancang dan difabrikasi secara kustom sesuai asesmen klinis serta ukuran anatomi tubuh pasien untuk kenyamanan dan mobilitas maksimal.</p>
                 @endif
-            </p>
+            </div>
         </div>
     </div>
 </div>
@@ -36,7 +52,7 @@
         <aside class="lg:col-span-1 space-y-6">
             <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-xs sticky top-24">
                 <div class="flex items-center justify-between pb-4 border-b border-gray-200">
-                    <h3 class="font-bold font-['Playfair_Display'] text-lg text-primary">Kategori Produk</h3>
+                    <h2 class="font-bold font-['Playfair_Display'] text-lg text-primary">Kategori Produk</h2>
                     @if($currentCategory || $search)
                         <a href="{{ route('catalog.index') }}" class="text-xs text-accent font-semibold hover:underline">
                             Reset Filter
@@ -95,12 +111,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                             </svg>
                         </div>
-                        <h4 class="text-xs font-bold text-primary">Butuh Bantuan Memilih?</h4>
+                        <h3 class="text-xs font-bold text-primary">Butuh Bantuan Memilih?</h3>
                         <p class="text-[11px] text-text-muted mt-1 leading-relaxed">
                             Diskusikan kondisi Anda dengan klinisi ortotis prostetis kami secara gratis via WhatsApp.
                         </p>
-                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings['company.whatsapp'] ?? '6281234567890') }}?text={{ urlencode('Halo SAM, saya ingin konsultasi mengenai alat yang cocok untuk kondisi saya.') }}"
+                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings['contact.whatsapp'] ?? '6281234567890') }}?text={{ rawurlencode('Halo SAM, saya ingin konsultasi mengenai alat yang cocok untuk kondisi saya.') }}"
                            target="_blank"
+                           rel="noopener noreferrer nofollow"
                            class="mt-3 inline-flex items-center justify-center w-full px-3 py-2 text-xs font-semibold rounded-lg text-white bg-[#25D366] hover:bg-[#20b858] transition-colors shadow-xs">
                             Hubungi Tim Klinis
                         </a>
@@ -121,6 +138,7 @@
                            name="search"
                            value="{{ $search }}"
                            placeholder="Cari alat (cth: AFO, Kaki Palsu, KAFO, Skoliosis)..."
+                           aria-label="Cari produk alat ortotik dan prostetik"
                            class="w-full text-sm rounded-xl border border-gray-200 py-2.5 pl-10 pr-10 focus:outline-hidden focus:border-primary bg-surface-soft">
                     <svg class="w-4 h-4 text-primary absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -166,7 +184,10 @@
                             <a href="{{ route('catalog.show', $product->slug) }}" class="relative aspect-4/3 bg-gray-100 overflow-hidden block">
                                 @if($product->photo)
                                     <img src="{{ Storage::disk('public')->url($product->photo) }}"
-                                         alt="{{ $product->name }}"
+                                         alt="Foto {{ $product->name }}"
+                                         width="400"
+                                         height="300"
+                                         loading="lazy"
                                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                                 @else
                                     <div class="w-full h-full flex flex-col items-center justify-center p-6 text-center text-gray-400 bg-surface-soft">
@@ -186,11 +207,11 @@
 
                             <!-- Konten Produk -->
                             <div class="p-5 flex-1 flex flex-col">
-                                <h3 class="font-bold font-['Playfair_Display'] text-base text-primary group-hover:text-accent transition-colors leading-snug">
+                                <h2 class="font-bold font-['Playfair_Display'] text-base text-primary group-hover:text-accent transition-colors leading-snug">
                                     <a href="{{ route('catalog.show', $product->slug) }}">
                                         {{ $product->name }}
                                     </a>
-                                </h3>
+                                </h2>
 
                                 @if($product->indication)
                                     <p class="text-xs text-primary mt-1.5 font-medium line-clamp-1">
@@ -216,8 +237,9 @@
                                         <span class="ml-1 group-hover:translate-x-0.5 transition-transform">&rarr;</span>
                                     </a>
 
-                                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings['company.whatsapp'] ?? '6281234567890') }}?text={{ urlencode('Halo SAM, saya ingin tanya mengenai produk ' . $product->name . '.') }}"
+                                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings['contact.whatsapp'] ?? '6281234567890') }}?text={{ rawurlencode('Halo SAM, saya ingin tanya mengenai produk ' . $product->name . '.') }}"
                                        target="_blank"
+                                       rel="noopener noreferrer nofollow"
                                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#25D366] hover:bg-[#20b858] transition-colors shadow-xs">
                                         <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                                             <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
@@ -235,24 +257,40 @@
                     {{ $products->links() }}
                 </div>
             @else
-                <!-- Empty State -->
-                <div class="bg-white rounded-3xl p-12 text-center border border-gray-200 shadow-xs">
-                    <div class="w-16 h-16 rounded-2xl bg-surface-soft text-primary flex items-center justify-center mx-auto mb-4">
+                <!-- Empty State dengan Saran Kategori -->
+                <div class="bg-white rounded-3xl p-10 sm:p-14 text-center border border-gray-200 shadow-xs space-y-6">
+                    <div class="w-16 h-16 rounded-2xl bg-surface-soft text-primary flex items-center justify-center mx-auto">
                         <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <h3 class="font-bold text-xl text-primary font-['Playfair_Display']">Produk Tidak Ditemukan</h3>
-                    <p class="text-sm text-text-muted max-w-md mx-auto mt-2 leading-relaxed">
-                        @if($search)
-                            Tidak ada alat ortotik atau prostetik yang cocok dengan kata kunci "{{ $search }}".
-                        @else
-                            Belum ada produk aktif dalam kategori ini.
-                        @endif
-                    </p>
-                    <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+                    <div>
+                        <h2 class="font-bold text-xl sm:text-2xl text-primary font-['Playfair_Display']">Produk Tidak Ditemukan</h2>
+                        <p class="text-sm text-text-muted max-w-md mx-auto mt-2 leading-relaxed">
+                            @if($search)
+                                Tidak ada alat ortotik atau prostetik yang cocok dengan kata kunci "{{ $search }}". Silakan pilih kategori rekomendasi di bawah ini atau konsultasikan langsung dengan tim kami.
+                            @else
+                                Belum ada produk aktif yang dapat ditampilkan dalam kategori ini.
+                            @endif
+                        </p>
+                    </div>
+
+                    <!-- Rekomendasi Kategori untuk Menghindari Halaman Buntu -->
+                    <div class="pt-2">
+                        <span class="text-xs font-semibold text-text-muted block mb-3 uppercase tracking-wider">Kategori Pilihan:</span>
+                        <div class="flex flex-wrap items-center justify-center gap-2">
+                            @foreach($categoryTree as $cat)
+                                <a href="{{ route('catalog.index', ['kategori' => $cat->slug]) }}"
+                                   class="px-4 py-2 rounded-xl text-xs font-semibold bg-surface-soft text-primary hover:bg-primary hover:text-white transition-colors border border-gray-200">
+                                    {{ $cat->name }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex flex-wrap items-center justify-center gap-3">
                         <a href="{{ route('catalog.index') }}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-primary hover:bg-primary-dark transition-colors">
-                            Lihat Semua Produk
+                            Lihat Seluruh Katalog
                         </a>
                         <a href="{{ route('appointment') }}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-accent hover:bg-accent-hover transition-colors">
                             Konsultasikan Kebutuhan Kustom
@@ -263,4 +301,15 @@
         </main>
     </div>
 </div>
+
+{{-- Schema.org JSON-LD Breadcrumbs via StructuredData Service --}}
+@push('schema')
+    @php
+        $sd = \App\Support\StructuredData::make($settings);
+        $schemas = [
+            $sd->breadcrumbs($seoData->getBreadcrumbs()),
+        ];
+    @endphp
+    {!! $sd->render($schemas) !!}
+@endpush
 @endsection

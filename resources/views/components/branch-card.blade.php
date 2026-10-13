@@ -29,7 +29,9 @@
                 </div>
 
                 <h3 class="text-2xl sm:text-3xl font-bold font-['Playfair_Display'] text-primary mb-3">
-                    {{ $branch->name }}
+                    <a href="{{ route('branch.show', $branch->slug) }}" class="hover:text-accent transition-colors">
+                        {{ $branch->name }}
+                    </a>
                 </h3>
 
                 <!-- Address -->
@@ -68,10 +70,15 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-100">
+                <a href="{{ route('branch.show', $branch->slug) }}"
+                   class="inline-flex items-center justify-center px-5 py-3 rounded-xl text-sm font-semibold text-white bg-primary hover:bg-primary-dark transition-all shadow-xs">
+                    Detail & Jadwal Cabang
+                </a>
+
                 <a href="{{ $waUrl }}"
                    target="_blank"
-                   rel="noopener noreferrer"
-                   class="inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold text-white bg-[#128C7E] hover:bg-[#075E54] shadow-xs hover:shadow-md transition-all">
+                   rel="noopener noreferrer nofollow"
+                   class="inline-flex items-center justify-center px-5 py-3 rounded-xl text-sm font-semibold text-white bg-[#128C7E] hover:bg-[#075E54] shadow-xs hover:shadow-md transition-all">
                     <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.316 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.818-.981z"/>
                     </svg>
@@ -82,11 +89,11 @@
                     <a href="{{ $branch->maps_link }}"
                        target="_blank"
                        rel="noopener noreferrer"
-                       class="inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold text-primary bg-surface-soft hover:bg-surface-soft/80 border border-gray-200/80 transition-all">
+                       class="inline-flex items-center justify-center px-5 py-3 rounded-xl text-sm font-semibold text-primary bg-surface-soft hover:bg-surface-soft/80 border border-gray-200/80 transition-all">
                         <svg class="w-4 h-4 mr-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                         </svg>
-                        Petunjuk Arah Google Maps
+                        Google Maps
                     </a>
                 @endif
             </div>
@@ -97,6 +104,8 @@
             @if ($branch->maps_embed_url)
                 <iframe src="{{ $branch->maps_embed_url }}"
                         title="Peta Lokasi {{ $branch->name }}"
+                        width="600"
+                        height="400"
                         class="w-full h-full min-h-[320px] lg:min-h-full border-0"
                         loading="lazy"
                         referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -122,7 +131,9 @@
             </div>
 
             <h3 class="text-xl font-bold font-['Playfair_Display'] text-primary mb-2">
-                {{ $branch->name }}
+                <a href="{{ route('branch.show', $branch->slug) }}" class="hover:text-accent transition-colors">
+                    {{ $branch->name }}
+                </a>
             </h3>
 
             <p class="text-xs sm:text-sm text-text-muted leading-relaxed mb-5">
@@ -149,23 +160,19 @@
         </div>
 
         <div class="pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
-            <a href="{{ $waUrl }}"
-               target="_blank"
-               rel="noopener noreferrer"
-               class="text-xs font-semibold text-[#128C7E] hover:underline inline-flex items-center gap-1">
-                <span>Chat WA Cabang</span>
+            <a href="{{ route('branch.show', $branch->slug) }}"
+               class="text-xs font-semibold text-primary hover:text-accent inline-flex items-center gap-1">
+                <span>Lihat Profil</span>
                 <span>&rarr;</span>
             </a>
 
-            @if ($branch->maps_link)
-                <a href="{{ $branch->maps_link }}"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="text-xs font-semibold text-primary hover:text-accent inline-flex items-center gap-1">
-                    <span>Google Maps</span>
-                    <span>&nearr;</span>
-                </a>
-            @endif
+            <a href="{{ $waUrl }}"
+               target="_blank"
+               rel="noopener noreferrer nofollow"
+               class="text-xs font-semibold text-[#128C7E] hover:underline inline-flex items-center gap-1">
+                <span>WA Cabang</span>
+                <span>&nearr;</span>
+            </a>
         </div>
     </div>
 @endif

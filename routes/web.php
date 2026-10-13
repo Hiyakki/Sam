@@ -3,6 +3,7 @@
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\Api\AppointmentApiController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\HomeController;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [AboutController::class, 'index'])->name('about');
+Route::get('/cabang/{slug}', [BranchController::class, 'show'])->name('branch.show');
 Route::get('/katalog', [CatalogController::class, 'index'])->name('catalog.index');
 Route::get('/katalog/{slug}', [CatalogController::class, 'show'])->name('catalog.show');
 Route::get('/faq', [FaqController::class, 'index'])->name('faq');

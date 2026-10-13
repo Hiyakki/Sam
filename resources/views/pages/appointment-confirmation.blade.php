@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Konfirmasi Janji Temu - SAM Orthotic Prosthetic')
+@section('meta_robots', 'noindex, nofollow')
 
 @section('content')
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16"

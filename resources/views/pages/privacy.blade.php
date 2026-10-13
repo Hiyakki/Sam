@@ -1,21 +1,32 @@
 @extends('layouts.app')
 
-@section('title', 'Kebijakan Privasi - SAM Orthotic Prosthetic')
-@section('meta_description', 'Kebijakan privasi perlindungan data medis dan informasi pribadi pasien SAM Orthotic Prosthetic.')
+@php
+    $seoData = \App\Support\Seo::make($settings ?? null)->forPrivacy();
+@endphp
+
+@section('title', $seoData->getTitle())
+@section('meta_description', $seoData->getDescription())
+@section('canonical_url', $seoData->getCanonical())
 
 @section('content')
 <!-- Header Banner -->
-<div class="bg-gradient-to-b from-surface-soft via-background to-background py-12 sm:py-16 border-b border-gray-200">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <span class="text-xs font-bold uppercase tracking-widest text-primary bg-white px-3 py-1 rounded-full border border-gray-200 inline-block shadow-2xs">
-            Kerahasiaan & Keamanan
-        </span>
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-['Playfair_Display'] text-primary mt-3 tracking-tight">
-            Kebijakan Privasi
-        </h1>
-        <p class="text-sm text-text-muted mt-2">
-            Perlindungan Data Pasien & Pengunjung Website SAM Orthotic Prosthetic
-        </p>
+<div class="bg-gradient-to-b from-surface-soft via-background to-background py-10 sm:py-14 border-b border-gray-200">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-4">
+            <x-breadcrumb :items="$seoData->getBreadcrumbs()" />
+        </div>
+
+        <div class="text-center">
+            <span class="text-xs font-bold uppercase tracking-widest text-primary bg-white px-3 py-1 rounded-full border border-gray-200 inline-block shadow-2xs">
+                Kerahasiaan & Keamanan
+            </span>
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-['Playfair_Display'] text-primary mt-3 tracking-tight">
+                Kebijakan Privasi
+            </h1>
+            <p class="text-sm text-text-muted mt-2">
+                Perlindungan Data Pasien & Pengunjung Website SAM Orthotic Prosthetic
+            </p>
+        </div>
     </div>
 </div>
 
@@ -81,8 +92,8 @@
                         Apabila Anda memiliki pertanyaan, keluhan, atau ingin mengajukan permohonan terkait data pribadi Anda, silakan hubungi kami melalui:
                     </p>
                     <div class="bg-surface-soft p-4 rounded-xl border border-gray-200 space-y-1 text-xs text-primary">
-                        <div><strong>Email:</strong> {{ $settings['company.email'] ?? 'info@sam-orthotic.com' }}</div>
-                        <div><strong>WhatsApp:</strong> {{ $settings['company.whatsapp'] ?? '+62 812-3456-7890' }}</div>
+                        <div><strong>Email:</strong> {{ $settings['contact.email'] ?? $settings['company.email'] ?? 'info@sam-orthotic.com' }}</div>
+                        <div><strong>WhatsApp:</strong> {{ $settings['contact.whatsapp'] ?? $settings['company.whatsapp'] ?? '+62 812-3456-7890' }}</div>
                         <div><strong>Alamat Operasional:</strong> {{ $settings['company.address'] ?? 'Indonesia' }}</div>
                     </div>
                 </section>
@@ -90,4 +101,14 @@
         @endif
     </div>
 </div>
+
+@push('schema')
+    @php
+        $sd = \App\Support\StructuredData::make($settings ?? null);
+        $schemas = [
+            $sd->breadcrumbs($seoData->getBreadcrumbs()),
+        ];
+    @endphp
+    {!! $sd->render($schemas) !!}
+@endpush
 @endsection

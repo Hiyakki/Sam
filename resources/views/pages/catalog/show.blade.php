@@ -1,35 +1,20 @@
 @extends('layouts.app')
 
-@section('title', $product->name . ' - SAM Orthotic Prosthetic')
-@section('meta_description', Str::limit(strip_tags($product->function ?: $product->description ?: 'Detail alat bantu gerak kustom ' . $product->name), 160))
-@if($product->photo)
-    @section('og_image', Storage::disk('public')->url($product->photo))
-@endif
+@php
+    $seoData = \App\Support\Seo::make($settings)->forProduct($product);
+@endphp
+
+@section('title', $seoData->getTitle())
+@section('meta_description', $seoData->getDescription())
+@section('canonical_url', $seoData->getCanonical())
+@section('og_image', $seoData->getOgImage())
 @section('og_type', 'product')
 
 @section('content')
 <!-- Breadcrumbs -->
-<div class="bg-surface-soft border-b border-gray-200 py-3.5">
+<div class="bg-surface-soft border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <nav class="flex items-center space-x-2 text-xs text-text-muted overflow-x-auto whitespace-nowrap">
-            <a href="{{ route('home') }}" class="hover:text-primary transition-colors">Home</a>
-            <span>/</span>
-            <a href="{{ route('catalog.index') }}" class="hover:text-primary transition-colors">Katalog</a>
-            @if($product->category)
-                @if($product->category->parent)
-                    <span>/</span>
-                    <a href="{{ route('catalog.index', ['kategori' => $product->category->parent->slug]) }}" class="hover:text-primary transition-colors">
-                        {{ $product->category->parent->name }}
-                    </a>
-                @endif
-                <span>/</span>
-                <a href="{{ route('catalog.index', ['kategori' => $product->category->slug]) }}" class="hover:text-primary transition-colors">
-                    {{ $product->category->name }}
-                </a>
-            @endif
-            <span>/</span>
-            <span class="text-primary font-semibold truncate">{{ $product->name }}</span>
-        </nav>
+        <x-breadcrumb :items="$seoData->getBreadcrumbs()" />
     </div>
 </div>
 
@@ -252,26 +237,15 @@
     </div>
 </div>
 
-{{-- Schema.org JSON-LD Product --}}
-<script type="application/ld+json">
-{!! json_encode([
-    '@'.'context' => 'https://schema.org',
-    '@'.'type' => 'Product',
-    'name' => $product->name,
-    'description' => Str::limit(strip_tags($product->function ?: $product->description ?: $product->name), 250),
-    'image' => $product->photo ? [Storage::disk('public')->url($product->photo)] : [asset('images/logo-sam.png')],
-    'category' => $product->category?->name,
-    'brand' => [
-        '@'.'type' => 'Brand',
-        'name' => 'SAM Orthotic Prosthetic',
-    ],
-    'offers' => [
-        '@'.'type' => 'Offer',
-        'url' => url()->current(),
-        'priceCurrency' => 'IDR',
-        'availability' => 'https://schema.org/InStock',
-        'itemCondition' => 'https://schema.org/NewCondition',
-    ],
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
-</script>
+{{-- Schema.org JSON-LD Product & Breadcrumbs via StructuredData Service --}}
+@push('schema')
+    @php
+        $sd = \App\Support\StructuredData::make($settings);
+        $schemas = [
+            $sd->product($product),
+            $sd->breadcrumbs($seoData->getBreadcrumbs()),
+        ];
+    @endphp
+    {!! $sd->render($schemas) !!}
+@endpush
 @endsection

@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
-@section('title', ($settings['general.site_name'] ?? 'SAM Orthotic Prosthetic') . ' - Solusi Kaki Palsu & Penyangga Tubuh Terpercaya')
+@php
+    $seoData = \App\Support\Seo::make($settings)->forHome();
+@endphp
+
+@section('title', $seoData->getTitle())
+@section('meta_description', $seoData->getDescription())
+@section('canonical_url', $seoData->getCanonical())
 
 @section('content')
     {{-- 1. Hero Section (2-col desktop, 1-col mobile, factual trust metrics) --}}
@@ -34,55 +40,22 @@
     @include('pages.home._cta')
 
     {{-- Schema.org JSON-LD Structured Data: MedicalBusiness & LocalBusiness per Cabang --}}
-    @php
-        $graph = [
-            [
-                '@'.'type' => 'MedicalBusiness',
-                '@'.'id' => url('/') . '#organization',
-                'name' => $settings['general.site_name'] ?? 'SAM Orthotic Prosthetic',
-                'url' => url('/'),
-                'logo' => asset('images/logo-sam.png'),
-                'description' => 'Layanan klinis dan fabrikasi alat bantu gerak tubuh ortotik prostetik kustom presisi tinggi sejak 2014.',
-                'telephone' => $settings['company.whatsapp'] ?? '+6281234567890',
-                'email' => $settings['company.email'] ?? 'info@sam-orthotic.com',
-                'address' => [
-                    '@'.'type' => 'PostalAddress',
-                    'streetAddress' => $settings['company.address'] ?? 'Indonesia',
-                    'addressCountry' => 'ID',
-                ],
-                'medicalSpecialty' => ['Orthotics', 'Prosthetics'],
-            ],
-        ];
-
-        if (isset($branches) && $branches->isNotEmpty()) {
-            foreach ($branches as $branch) {
-                $branchItem = [
-                    '@'.'type' => 'LocalBusiness',
-                    '@'.'id' => url('/') . '#branch-' . $branch->slug,
-                    'name' => ($settings['general.site_name'] ?? 'SAM Orthotic Prosthetic') . ' - Cabang ' . $branch->name,
-                    'url' => url('/'),
-                    'telephone' => $branch->phone_wa ?: ($settings['company.whatsapp'] ?? '+6281234567890'),
-                    'address' => [
-                        '@'.'type' => 'PostalAddress',
-                        'streetAddress' => $branch->address,
-                        'addressCountry' => 'ID',
-                    ],
-                ];
-                if ($branch->latitude && $branch->longitude) {
-                    $branchItem['geo'] = [
-                        '@'.'type' => 'GeoCoordinates',
-                        'latitude' => (float) $branch->latitude,
-                        'longitude' => (float) $branch->longitude,
-                    ];
+    @push('schema')
+        @php
+            $sd = \App\Support\StructuredData::make($settings);
+            $schemas = [
+                $sd->organization(),
+                $sd->webSite(),
+            ];
+            if (isset($branches) && $branches->isNotEmpty()) {
+                foreach ($branches as $branch) {
+                    $schemas[] = $sd->localBusiness($branch);
                 }
-                $graph[] = $branchItem;
             }
-        }
-    @endphp
-    <script type="application/ld+json">
-    {!! json_encode([
-        '@'.'context' => 'https://schema.org',
-        '@'.'graph' => $graph,
-    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}
-    </script>
+            if (isset($faqs) && $faqs->isNotEmpty()) {
+                $schemas[] = $sd->faqPage($faqs);
+            }
+        @endphp
+        {!! $sd->render($schemas) !!}
+    @endpush
 @endsection

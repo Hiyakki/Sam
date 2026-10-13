@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTestimonialRequest;
+use App\Models\SiteSetting;
 use App\Models\Testimonial;
 use App\Services\TestimonialSubmissionService;
 
@@ -10,9 +11,10 @@ class TestimonialController extends Controller
 {
     public function index()
     {
+        $settings = SiteSetting::allCached();
         $testimonials = Testimonial::with('product')->active()->paginate(15);
 
-        return view('pages.testimonials', compact('testimonials'));
+        return view('pages.testimonials', compact('testimonials', 'settings'));
     }
 
     public function store(StoreTestimonialRequest $request, TestimonialSubmissionService $service)

@@ -1,12 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'Testimoni Pasien - SAM Orthotic Prosthetic')
-@section('meta_description', 'Cerita dan testimoni nyata pasien pengguna kaki palsu, tangan palsu, dan brace medis kustom dari SAM Orthotic Prosthetic.')
+@php
+    $seoData = \App\Support\Seo::make($settings ?? null)->forTestimonials();
+@endphp
+
+@section('title', $seoData->getTitle())
+@section('meta_description', $seoData->getDescription())
+@section('canonical_url', $seoData->getCanonical())
 
 @section('content')
-<section class="py-16 md:py-24 bg-surface-soft min-h-screen">
+<section class="py-12 md:py-20 bg-surface-soft min-h-screen">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        <div class="mb-6">
+            <x-breadcrumb :items="$seoData->getBreadcrumbs()" />
+        </div>
+
         <!-- Header -->
         <div class="text-center mb-16">
             <h1 class="text-4xl md:text-5xl font-bold font-['Playfair_Display'] text-primary mb-5">Pengalaman Pasien Bersama SAM</h1>
@@ -82,4 +91,14 @@
 
     </div>
 </section>
+
+@push('schema')
+    @php
+        $sd = \App\Support\StructuredData::make($settings ?? null);
+        $schemas = [
+            $sd->breadcrumbs($seoData->getBreadcrumbs()),
+        ];
+    @endphp
+    {!! $sd->render($schemas) !!}
+@endpush
 @endsection

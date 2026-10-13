@@ -1,21 +1,32 @@
 @extends('layouts.app')
 
-@section('title', 'Pertanyaan Umum (FAQ) - SAM Orthotic Prosthetic')
-@section('meta_description', 'Temukan jawaban atas pertanyaan seputar pemesanan kaki palsu, brace ortotik, resep dokter, jadwal konsultasi, dan proses fitting di SAM.')
+@php
+    $seoData = \App\Support\Seo::make($settings)->forFaq();
+@endphp
+
+@section('title', $seoData->getTitle())
+@section('meta_description', $seoData->getDescription())
+@section('canonical_url', $seoData->getCanonical())
 
 @section('content')
 <!-- Header Banner -->
-<div class="bg-gradient-to-b from-surface-soft via-background to-background py-12 sm:py-16 border-b border-gray-200">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <span class="text-xs font-bold uppercase tracking-widest text-primary bg-white px-3 py-1 rounded-full border border-gray-200 inline-block shadow-2xs">
-            Pusat Informasi & Panduan
-        </span>
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-['Playfair_Display'] text-primary mt-3 tracking-tight">
-            Pertanyaan yang Sering Diajukan
-        </h1>
-        <p class="text-sm sm:text-base text-text-muted mt-3 max-w-2xl mx-auto leading-relaxed">
-            Dapatkan informasi lengkap mengenai alur konsultasi, pembuatan alat ortotik & prostetik kustom, dokumen rujukan dokter, hingga penyesuaian alat.
-        </p>
+<div class="bg-gradient-to-b from-surface-soft via-background to-background py-10 sm:py-14 border-b border-gray-200">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-4">
+            <x-breadcrumb :items="$seoData->getBreadcrumbs()" />
+        </div>
+
+        <div class="text-center">
+            <span class="text-xs font-bold uppercase tracking-widest text-primary bg-white px-3 py-1 rounded-full border border-gray-200 inline-block shadow-2xs">
+                Pusat Informasi & Panduan
+            </span>
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-['Playfair_Display'] text-primary mt-3 tracking-tight">
+                Pertanyaan yang Sering Diajukan
+            </h1>
+            <p class="text-sm sm:text-base text-text-muted mt-3 max-w-2xl mx-auto leading-relaxed">
+                Dapatkan informasi lengkap mengenai alur konsultasi, pembuatan alat ortotik & prostetik kustom, dokumen rujukan dokter, hingga penyesuaian alat.
+            </p>
+        </div>
     </div>
 </div>
 
@@ -136,31 +147,15 @@
     </div>
 </div>
 
-{{-- Schema.org JSON-LD FAQPage --}}
-@php
-    $faqEntities = [];
-    if (isset($groupedFaqs)) {
-        foreach ($groupedFaqs as $cat => $faqs) {
-            foreach ($faqs as $item) {
-                $faqEntities[] = [
-                    '@'.'type' => 'Question',
-                    'name' => $item->question,
-                    'acceptedAnswer' => [
-                        '@'.'type' => 'Answer',
-                        'text' => strip_tags($item->answer),
-                    ],
-                ];
-            }
-        }
-    }
-@endphp
-@if(count($faqEntities) > 0)
-    <script type="application/ld+json">
-    {!! json_encode([
-        '@'.'context' => 'https://schema.org',
-        '@'.'type' => 'FAQPage',
-        'mainEntity' => $faqEntities,
-    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
-    </script>
-@endif
+{{-- Schema.org JSON-LD FAQPage & Breadcrumbs via StructuredData Service --}}
+@push('schema')
+    @php
+        $sd = \App\Support\StructuredData::make($settings);
+        $schemas = [
+            $sd->faqPage($faqs ?? []),
+            $sd->breadcrumbs($seoData->getBreadcrumbs()),
+        ];
+    @endphp
+    {!! $sd->render($schemas) !!}
+@endpush
 @endsection
