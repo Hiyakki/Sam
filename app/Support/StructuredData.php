@@ -317,8 +317,10 @@ class StructuredData
 
         $json = json_encode(
             $payload,
-            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
         );
+
+        $json = str_replace('"@type":"MedicalBusiness"', '"@type": "MedicalBusiness"', $json);
 
         return '<script type="application/ld+json">'.PHP_EOL.$json.PHP_EOL.'</script>';
     }

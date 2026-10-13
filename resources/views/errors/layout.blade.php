@@ -65,6 +65,13 @@
                     </svg>
                     <span>Kembali ke Beranda</span>
                 </a>
+                <a href="{{ url('/katalog') }}"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-[#1E2A4A] bg-slate-100 hover:bg-slate-200 transition-colors shadow-xs">
+                    <svg class="w-4 h-4 stroke-current" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                    </svg>
+                    <span>Lihat Katalog</span>
+                </a>
                 <a href="https://wa.me/{{ $waPhone }}?text={{ rawurlencode('Halo SAM Orthotic Prosthetic, saya mengalami kendala pada halaman web: ' . url()->current()) }}"
                    target="_blank"
                    rel="noopener noreferrer"
