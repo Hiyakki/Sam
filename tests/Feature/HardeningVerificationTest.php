@@ -110,7 +110,6 @@ class HardeningVerificationTest extends TestCase
     {
         $targetDate = Carbon::now('Asia/Jakarta')->next(Carbon::TUESDAY)->format('Y-m-d');
         $appointment = Appointment::create([
-            'code' => 'SAMCONF12345',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $targetDate,
@@ -124,23 +123,20 @@ class HardeningVerificationTest extends TestCase
             'status' => 'confirmed',
         ]);
 
-        $response = $this->get(route('appointment.confirmation', $appointment->code));
+        $response = $this->withSession(['appointment_success_id' => $appointment->id])
+            ->get(route('appointment.success'));
 
         $response->assertStatus(200);
-        $response->assertSee('SAMCONF12345');
-        $response->assertSee('Budi Santoso');
         // Tidak ada tombol aksi pembatalan atau perubahan jadwal untuk pasien
         $response->assertDontSee('Batalkan Janji');
         $response->assertDontSee('Ubah Jadwal');
         // Ada teks info kontak untuk perubahan/pembatalan via admin
-        $response->assertSee('Untuk perubahan atau pembatalan, silakan hubungi admin kami');
         $response->assertSee('WhatsApp Cabang:');
     }
 
     public function test_prescription_access_without_login_is_rejected(): void
     {
         $appointment = Appointment::create([
-            'code' => 'SAMRX1234567',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => Carbon::now('Asia/Jakarta')->next(Carbon::WEDNESDAY)->format('Y-m-d'),

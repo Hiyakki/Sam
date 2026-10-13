@@ -69,7 +69,6 @@ class ProductionSecurityTest extends TestCase
         $filePath = Storage::disk('local')->putFile('prescriptions', UploadedFile::fake()->create('resep.pdf', 100, 'application/pdf'));
 
         $appointment = Appointment::create([
-            'code' => 'SAM-SEC123456',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => now()->addDays(2)->format('Y-m-d'),
@@ -99,7 +98,6 @@ class ProductionSecurityTest extends TestCase
         $filePath = Storage::disk('local')->putFile('prescriptions', $file);
 
         $appointment = Appointment::create([
-            'code' => 'SAM-SEC789012',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => now()->addDays(2)->format('Y-m-d'),
@@ -145,10 +143,9 @@ class ProductionSecurityTest extends TestCase
         $response->assertSessionHasErrors('prescription');
     }
 
-    public function test_confirmation_page_does_not_leak_sensitive_patient_data(): void
+    public function test_success_page_does_not_leak_sensitive_patient_data(): void
     {
         $appointment = Appointment::create([
-            'code' => 'SAM-CONF12345',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => now()->addDays(2)->format('Y-m-d'),
@@ -163,15 +160,14 @@ class ProductionSecurityTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $response = $this->get(route('appointment.confirmation', $appointment->code));
+        $response = $this->withSession(['appointment_success_id' => $appointment->id])
+            ->get(route('appointment.success'));
 
         $response->assertStatus(200);
-        // Harus menampilkan ringkasan publik
-        $response->assertSee('SAM-CONF12345');
-        $response->assertSee('Budi Sudarsono');
+        // Menampilkan ringkasan minimal
         $response->assertSee('Solo');
 
-        // TIDAK boleh membocorkan data sensitif pasien
+        // TIDAK boleh membocorkan data sensitif pasien atau kode
         $response->assertDontSee('Sangat sensitif: Amputasi paha kiri');
         $response->assertDontSee('secret.pdf');
         $response->assertDontSee('6289912345678');

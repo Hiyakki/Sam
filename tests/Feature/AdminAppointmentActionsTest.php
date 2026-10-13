@@ -81,7 +81,6 @@ class AdminAppointmentActionsTest extends TestCase
         }
 
         $appointment = Appointment::create([
-            'code' => 'SAM-TESTRESCH',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $date1->format('Y-m-d'),
@@ -160,7 +159,6 @@ class AdminAppointmentActionsTest extends TestCase
 
         // Buat janji lain di jam 09:00 (slot capacity = 1)
         Appointment::create([
-            'code' => 'SAM-SLOT09FULL',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $targetDate->format('Y-m-d'),
@@ -210,7 +208,6 @@ class AdminAppointmentActionsTest extends TestCase
         }
 
         $appointment = Appointment::create([
-            'code' => 'SAM-CANCELTEST',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $targetDate->format('Y-m-d'),

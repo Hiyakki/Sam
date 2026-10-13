@@ -12,7 +12,6 @@ class Appointment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'code',
         'branch_id',
         'service_id',
         'appointment_date',

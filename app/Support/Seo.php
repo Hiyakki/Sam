@@ -415,14 +415,19 @@ class Seo
         return $this;
     }
 
-    public function forConfirmation(): self
+    public function forAppointmentSuccess(): self
     {
-        $this->setTitle('Konfirmasi Janji Temu | '.$this->siteName)
-            ->setDescription('Status pendaftaran janji temu pasien SAM Orthotic Prosthetic.')
-            ->setCanonical(url()->current())
+        $this->setTitle('Pendaftaran Janji Temu Berhasil | '.$this->siteName)
+            ->setDescription('Pendaftaran janji temu pasien SAM Orthotic Prosthetic telah diterima.')
+            ->setCanonical(url('/janji/berhasil'))
             ->setRobots('noindex, nofollow');
 
         return $this;
+    }
+
+    public function forConfirmation(): self
+    {
+        return $this->forAppointmentSuccess();
     }
 
     public function forPrivacy(): self

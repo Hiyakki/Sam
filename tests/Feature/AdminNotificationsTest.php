@@ -68,7 +68,6 @@ class AdminNotificationsTest extends TestCase
 
         // Buat janji temu untuk hari ini
         Appointment::create([
-            'code' => 'SAM-TODAY001',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $today,
@@ -87,7 +86,7 @@ class AdminNotificationsTest extends TestCase
             ->assertSuccessful();
 
         Mail::assertQueued(DailyAgendaAdminMail::class, function ($mail) {
-            return $mail->appointments->count() === 1 && $mail->appointments->first()->code === 'SAM-TODAY001';
+            return $mail->appointments->count() === 1 && $mail->appointments->first()->patient_name === 'Pasien Hari Ini';
         });
     }
 
@@ -97,7 +96,6 @@ class AdminNotificationsTest extends TestCase
 
         // Tidak ada janji temu hari ini (hanya besok)
         Appointment::create([
-            'code' => 'SAM-TOMORROW01',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => Carbon::tomorrow('Asia/Jakarta')->format('Y-m-d'),

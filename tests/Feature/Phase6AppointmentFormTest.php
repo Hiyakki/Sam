@@ -134,9 +134,8 @@ class Phase6AppointmentFormTest extends TestCase
         $appointment = Appointment::where('patient_email', 'ahmad@example.com')->first();
         $this->assertNotNull($appointment);
         $this->assertEquals('pending', $appointment->status);
-        $this->assertEquals('6281234567890', $appointment->patient_phone);
-
-        $response->assertRedirect(route('appointment.confirmation', ['code' => $appointment->code]));
+        $response->assertRedirect(route('appointment.success'));
+        $this->assertEquals($appointment->id, session('appointment_success_id'));
     }
 
     public function test_prescription_file_upload_is_stored_privately(): void
@@ -193,7 +192,6 @@ class Phase6AppointmentFormTest extends TestCase
 
         // Buat 2 janji aktif dengan nomor telepon yang sama
         Appointment::create([
-            'code' => 'SAMTEST01',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $targetDate,
@@ -208,7 +206,6 @@ class Phase6AppointmentFormTest extends TestCase
         ]);
 
         Appointment::create([
-            'code' => 'SAMTEST02',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $targetDate,
@@ -251,7 +248,6 @@ class Phase6AppointmentFormTest extends TestCase
     {
         $targetDate = Carbon::now('Asia/Jakarta')->next(Carbon::MONDAY)->format('Y-m-d');
         $appointment = Appointment::create([
-            'code' => 'SAMCONFIRM01',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $targetDate,
@@ -265,15 +261,15 @@ class Phase6AppointmentFormTest extends TestCase
             'status' => 'confirmed',
         ]);
 
-        $response = $this->get(route('appointment.confirmation', $appointment->code));
+        $response = $this->withSession(['appointment_success_id' => $appointment->id])
+            ->get(route('appointment.success'));
 
         $response->assertStatus(200);
-        $response->assertSee('SAMCONFIRM01');
         $response->assertSee('Bambang Tri');
         // Tidak boleh ada tombol kelola / ubah / batal untuk pasien
         $response->assertDontSee('Ubah Jadwal');
+        $response->assertDontSee('Batalkan Janji');
         // Harus ada teks info kontak WA cabang (tanpa tombol aksi untuk pasien)
-        $response->assertSee('Untuk perubahan atau pembatalan, silakan hubungi admin kami');
         $response->assertSee('WhatsApp Cabang:');
     }
 

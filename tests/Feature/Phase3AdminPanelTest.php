@@ -144,7 +144,6 @@ class Phase3AdminPanelTest extends TestCase
         ]);
 
         $appointment = Appointment::create([
-            'code' => 'ABC123XYZ001',
             'branch_id' => $branch->id,
             'service_id' => $service->id,
             'appointment_date' => now()->addDays(2)->toDateString(),
@@ -184,7 +183,6 @@ class Phase3AdminPanelTest extends TestCase
         ]);
 
         $appointment = Appointment::create([
-            'code' => 'ABC123XYZ002',
             'branch_id' => $branch->id,
             'service_id' => $service->id,
             'appointment_date' => now()->addDays(2)->toDateString(),
@@ -202,6 +200,6 @@ class Phase3AdminPanelTest extends TestCase
         $response = $this->actingAs($admin)->get(route('filament.kelola-sam.prescription.download', $appointment));
 
         $response->assertOk();
-        $response->assertHeader('content-disposition', 'attachment; filename=resep-ABC123XYZ002.pdf');
+        $response->assertHeader('content-disposition', "attachment; filename=resep-janji-{$appointment->id}.pdf");
     }
 }

@@ -259,3 +259,48 @@ Bagian ini merangkum seluruh pekerjaan implementasi SEO on-page, SEO teknis, dat
 4. **Koordinat Geolokasi Cabang:** Lengkapi kolom latitude & longitude pada data cabang di database/panel jika ingin pin peta geo-koordinat muncul lengkap di schema `LocalBusiness`.
 5. **Konfigurasi Domain Produksi:** Saat deploy ke hosting, ubah `APP_URL=https://samorthotic.com` di `.env` produksi, pasang SSL HTTPS, dan kirim `sitemap.xml` ke Google Search Console. Detail lengkap tersedia di `docs/LAPORAN_SEO.md`.
 
+---
+
+## 12. Penghapusan Kode Booking & Fitur Ekspor Excel (Cabang Git `hapus-kode-ekspor-excel`)
+
+### Inventarisasi Pemakaian Kode Booking (Sebelum Pengubahan Kode)
+Berdasarkan pencarian case-insensitive terhadap `code`, `kode`, `kode janji`, `SAM-`, generator kode, dan route `/janji/konfirmasi/{code}`, ditemukan pemakaian pada komponen berikut:
+
+1. **Database & Migrasi:**
+   - `database/migrations/2026_10_02_000008_create_appointments_table.php`: definisi `$table->string('code', 12)->unique();` (dihapus melalui migration baru).
+   - `database/seeders/FaqSeeder.php`: baris 15 dan 47 yang menyebutkan "menerima kode janji melalui email" dan tautan `<strong>/janji/{kode}</strong>`.
+2. **Model & Service:**
+   - `app/Models/Appointment.php`: kolom `'code'` di array `$fillable`.
+   - `app/Services/SlotService.php`: method `generateUniqueCode(): string` (`SAM` + 9 karakter acak) dan penugasan `'code' => $code` pada `Appointment::create()`.
+3. **Routing, Controller & Middleware:**
+   - `routes/web.php`: route `Route::get('/janji/konfirmasi/{code}', [AppointmentController::class, 'confirmation'])->name('appointment.confirmation');`.
+   - `app/Http/Controllers/AppointmentController.php`: redirect ke `appointment.confirmation` dengan parameter `code`, flash message "Simpan kode janji...", dan method `confirmation(string $code)`.
+   - `app/Http/Middleware/SeoRobotsHeaderMiddleware.php`: pengecekan `$isConfirmation = $request->is('janji/konfirmasi/*');`.
+   - `app/Support/Seo.php`: method `forConfirmation()`.
+4. **Filament Admin (`AppointmentResource.php`):**
+   - Baris 38: `protected static ?string $recordTitleAttribute = 'code';`
+   - Baris 141: `Infolists\Components\TextEntry::make('code')->label('Kode')->copyable(),`
+   - Baris 197-201: kolom tabel `Tables\Columns\TextColumn::make('code')->label('Kode')`
+   - Baris 240-290: tombol-tombol aksi berjajar di tabel yang belum dirapikan menjadi satu ActionGroup menu.
+   - Baris 353, 460: judul modal ubah jadwal dan pembatalan `Ubah Jadwal: {$record->code}`.
+   - Baris 432, 483: pesan notifikasi WhatsApp dengan format `(Kode: {$appt->code})`.
+   - Baris 532-534: template WhatsApp `reminder`, `reschedule`, `cancel` dengan format `(Kode: {$record->code})`.
+   - Baris 557: `getGloballySearchableAttributes()` yang memuat `'code'`.
+5. **Observer & Command Pengingat:**
+   - `app/Observers/AppointmentObserver.php`: pesan notifikasi WhatsApp ke admin yang memuat baris `\nKode: {$appointment->code}`.
+   - `app/Console/Commands/SendAppointmentRemindersCommand.php`: pesan pengingat H-1 yang memuat `(Kode: {$appointment->code})`.
+6. **Mailable & Template Email:**
+   - `app/Mail/AppointmentCreatedAdminMail.php`: subject memuat `({$this->appointment->code})`.
+   - `app/Mail/AppointmentCreatedPatientMail.php`: subject memuat `- {$this->appointment->code}`.
+   - `app/Mail/AppointmentReminderPatientMail.php`: subject memuat `- {$this->appointment->code}`.
+   - `app/Mail/AppointmentRescheduledPatientMail.php`: subject memuat `- {$this->appointment->code}`.
+   - `app/Mail/AppointmentStatusChangedPatientMail.php`: subject memuat `{$this->appointment->code}`.
+   - `resources/views/emails/appointment-created-admin.blade.php`: baris tabel HTML "Kode Janji:" dan `{{ $appointment->code }}`.
+7. **Tampilan Publik:**
+   - `resources/views/pages/appointment.blade.php`: teks di bawah tombol submit *"Setelah pengajuan berhasil, Anda akan menerima Kode Janji Temu sebagai tanda bukti reservasi."*
+   - `resources/views/pages/appointment-confirmation.blade.php`: komponen Alpine.js `copyCode()`, tampilan visual kartu "Kode Janji Temu", dan teks kode.
+8. **Pengujian (Tests):**
+   - Seluruh test file yang membuat appointment dengan dummy `'code' => 'SAM...'` (`Phase3AdminPanelTest`, `Phase5SlotServiceTest`, `Phase6AppointmentFormTest`, `Phase7NotificationTest`, `Phase8WhatsAppTest`, `Phase9SecurityAndSeoTest`, `AdminAppointmentActionsTest`, `AdminNotificationsTest`, `HardeningVerificationTest`, `ProductionSecurityTest`, `PurgeOldDataCommandTest`, `SeoAuditTest`).
+   - Test spesifik yang menguji route `/janji/konfirmasi/{code}`, panjang kode unik, dan kode pada tampilan konfirmasi.
+
+

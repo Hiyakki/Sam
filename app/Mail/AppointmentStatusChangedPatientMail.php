@@ -28,7 +28,7 @@ class AppointmentStatusChangedPatientMail extends Mailable implements ShouldQueu
         $statusLabel = $statusLabels[$this->appointment->status] ?? ucfirst($this->appointment->status);
 
         return new Envelope(
-            subject: "[SAM] Status Janji Temu {$this->appointment->code}: {$statusLabel}",
+            subject: "[SAM] Status Janji Temu {$this->appointment->patient_name}: {$statusLabel}",
         );
     }
 

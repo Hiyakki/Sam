@@ -35,7 +35,7 @@ class AppointmentResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $recordTitleAttribute = 'code';
+    protected static ?string $recordTitleAttribute = 'patient_name';
 
     public const STATUSES = [
         'pending' => 'Menunggu',
@@ -138,7 +138,6 @@ class AppointmentResource extends Resource
     {
         return $infolist->schema([
             Infolists\Components\Section::make('Detail Janji')->schema([
-                Infolists\Components\TextEntry::make('code')->label('Kode')->copyable(),
                 Infolists\Components\TextEntry::make('status')
                     ->label('Status')
                     ->badge()
@@ -193,12 +192,7 @@ class AppointmentResource extends Resource
                 Tables\Columns\TextColumn::make('patient_name')
                     ->label('Pasien')
                     ->description(fn (Appointment $record) => $record->patient_phone)
-                    ->searchable(['patient_name', 'patient_phone']),
-                Tables\Columns\TextColumn::make('code')
-                    ->label('Kode')
-                    ->searchable()
-                    ->copyable()
-                    ->toggleable(),
+                    ->searchable(['patient_name', 'patient_phone', 'patient_email']),
                 Tables\Columns\TextColumn::make('branch.name')
                     ->label('Kantor')
                     ->toggleable(),
@@ -238,55 +232,19 @@ class AppointmentResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()->label('Lihat Detail'),
+                    Tables\Actions\EditAction::make()->label('Tindak Lanjut'),
                     self::statusAction('confirm', 'Konfirmasi', 'confirmed', 'heroicon-m-check-circle', 'success', ['pending']),
                     self::rescheduleAction(),
                     self::statusAction('complete', 'Selesai', 'completed', 'heroicon-m-check-badge', 'primary', ['confirmed']),
                     self::statusAction('no_show', 'Tidak Hadir', 'no_show', 'heroicon-m-user-minus', 'gray', ['confirmed']),
                     self::cancelAction(),
-                ])->label('Aksi Janji')->icon('heroicon-m-cog-6-tooth')->button()->size('sm'),
-
-                Tables\Actions\Action::make('whatsapp')
-                    ->label('Chat WA')
-                    ->icon('heroicon-m-chat-bubble-left-right')
-                    ->color('success')
-                    ->form([
-                        Forms\Components\Select::make('template')
-                            ->label('Pilihan Template')
-                            ->options([
-                                'confirm' => 'Template Konfirmasi Jadwal',
-                                'reminder' => 'Template Pengingat Kehadiran',
-                                'reschedule' => 'Template Penyesuaian Jadwal',
-                                'cancel' => 'Template Pembatalan',
-                            ])
-                            ->default('confirm')
-                            ->reactive()
-                            ->afterStateUpdated(function ($state, Forms\Set $set, Appointment $record) {
-                                $set('message', self::generateTemplateMessage($record, $state));
-                            }),
-                        Forms\Components\Textarea::make('message')
-                            ->label('Isi Pesan WhatsApp (Dapat Diedit)')
-                            ->rows(5)
-                            ->required()
-                            ->default(fn (Appointment $record) => self::generateTemplateMessage($record, 'confirm')),
-                    ])
-                    ->modalHeading(fn (Appointment $record) => "Kirim WhatsApp ke {$record->patient_name}")
-                    ->modalSubmitActionLabel('Buka WhatsApp')
-                    ->action(function (Appointment $record, array $data) {
-                        $encoded = rawurlencode($data['message']);
-                        $url = 'https://wa.me/'.$record->patient_phone.'?text='.$encoded;
-
-                        return redirect()->away($url);
-                    }),
-
-                Tables\Actions\Action::make('prescription')
-                    ->label('Resep')
-                    ->icon('heroicon-m-document-arrow-down')
-                    ->visible(fn (Appointment $record) => filled($record->prescription_path))
-                    ->url(fn (Appointment $record) => route('filament.kelola-sam.prescription.download', $record))
-                    ->openUrlInNewTab(),
-
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()->label('Tindak lanjut'),
+                    self::whatsAppAction(),
+                    self::prescriptionAction(),
+                ])
+                    ->label('Aksi')
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->tooltip('Menu Aksi'),
             ]);
     }
 
@@ -350,7 +308,7 @@ class AppointmentResource extends Resource
                         return null;
                     }),
             ])
-            ->modalHeading(fn (Appointment $record) => "Ubah Jadwal: {$record->code}")
+            ->modalHeading(fn (Appointment $record) => "Ubah Jadwal: {$record->patient_name}")
             ->modalDescription('Pilih tanggal dan slot waktu baru yang masih tersedia.')
             ->modalSubmitActionLabel('Simpan Perubahan Jadwal')
             ->action(function (Appointment $record, array $data) {
@@ -429,7 +387,7 @@ class AppointmentResource extends Resource
                 }
 
                 $appt = $result['appointment'];
-                $waMessage = "Halo {$appt->patient_name}, jadwal janji temu Anda di {$result['branchName']} (Kode: {$appt->code}) telah disesuaikan menjadi {$result['dateDisplay']} pukul {$result['timeDisplay']} WIB. Silakan konfirmasi jika waktu ini sesuai bagi Anda. Terima kasih!";
+                $waMessage = "Halo {$appt->patient_name}, jadwal janji temu Anda di {$result['branchName']} telah disesuaikan menjadi {$result['dateDisplay']} pukul {$result['timeDisplay']} WIB. Silakan konfirmasi jika waktu ini sesuai bagi Anda. Terima kasih!";
                 $waUrl = 'https://wa.me/'.$appt->patient_phone.'?text='.rawurlencode($waMessage);
 
                 Notification::make()
@@ -457,7 +415,7 @@ class AppointmentResource extends Resource
             ->color('danger')
             ->visible(fn (Appointment $record) => in_array($record->status, ['pending', 'confirmed'], true))
             ->requiresConfirmation()
-            ->modalHeading(fn (Appointment $record) => "Batalkan Janji Temu: {$record->code}")
+            ->modalHeading(fn (Appointment $record) => "Batalkan Janji Temu: {$record->patient_name}")
             ->modalDescription('Slot akan otomatis dibebaskan dan email pembatalan dikirim ke pasien.')
             ->form([
                 Forms\Components\Textarea::make('cancellation_reason')
@@ -480,7 +438,7 @@ class AppointmentResource extends Resource
                 ]);
 
                 $branchName = $record->branch?->name ?? 'SAM Orthotic Prosthetic';
-                $waMessage = "Halo {$record->patient_name}, janji temu Anda di {$branchName} (Kode: {$record->code}) telah dibatalkan oleh pihak admin.".($reason !== '' ? " Alasan: {$reason}." : '').' Silakan hubungi kami kembali jika ingin membuat janji temu baru. Terima kasih.';
+                $waMessage = "Halo {$record->patient_name}, janji temu Anda di {$branchName} telah dibatalkan oleh pihak admin.".($reason !== '' ? " Alasan: {$reason}." : '').' Silakan hubungi kami kembali jika ingin membuat janji temu baru. Terima kasih.';
                 $waUrl = 'https://wa.me/'.$record->patient_phone.'?text='.rawurlencode($waMessage);
 
                 Notification::make()
@@ -495,6 +453,58 @@ class AppointmentResource extends Resource
                     ])
                     ->send();
             });
+    }
+
+    /**
+     * Aksi kirim WhatsApp dengan pilihan template dinamis.
+     */
+    public static function whatsAppAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('whatsapp')
+            ->label('Chat WhatsApp')
+            ->icon('heroicon-m-chat-bubble-left-right')
+            ->color('success')
+            ->form([
+                Forms\Components\Select::make('template')
+                    ->label('Pilihan Template')
+                    ->options([
+                        'confirm' => 'Template Konfirmasi Jadwal',
+                        'reminder' => 'Template Pengingat Kehadiran',
+                        'reschedule' => 'Template Penyesuaian Jadwal',
+                        'cancel' => 'Template Pembatalan',
+                    ])
+                    ->default('confirm')
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, Forms\Set $set, Appointment $record) {
+                        $set('message', self::generateTemplateMessage($record, $state));
+                    }),
+                Forms\Components\Textarea::make('message')
+                    ->label('Isi Pesan WhatsApp (Dapat Diedit)')
+                    ->rows(5)
+                    ->required()
+                    ->default(fn (Appointment $record) => self::generateTemplateMessage($record, 'confirm')),
+            ])
+            ->modalHeading(fn (Appointment $record) => "Kirim WhatsApp ke {$record->patient_name}")
+            ->modalSubmitActionLabel('Buka WhatsApp')
+            ->action(function (Appointment $record, array $data) {
+                $encoded = rawurlencode($data['message']);
+                $url = 'https://wa.me/'.$record->patient_phone.'?text='.$encoded;
+
+                return redirect()->away($url);
+            });
+    }
+
+    /**
+     * Aksi mengunduh file resep dokter.
+     */
+    public static function prescriptionAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('prescription')
+            ->label('Unduh Resep Dokter')
+            ->icon('heroicon-m-document-arrow-down')
+            ->visible(fn (Appointment $record) => filled($record->prescription_path))
+            ->url(fn (Appointment $record) => route('filament.kelola-sam.prescription.download', $record))
+            ->openUrlInNewTab();
     }
 
     /**
@@ -529,9 +539,9 @@ class AppointmentResource extends Resource
         $branch = $record->branch?->name ?? 'SAM Orthotic Prosthetic';
 
         return match ($type) {
-            'reminder' => "Halo {$record->patient_name}, kami mengingatkan kembali jadwal janji temu Anda di {$branch} (Kode: {$record->code}) pada {$date} pukul {$time} WIB. Mohon hadir 10 menit lebih awal. Terima kasih!",
-            'reschedule' => "Halo {$record->patient_name}, mengenai janji temu Anda di {$branch} (Kode: {$record->code}), jadwal kunjungan Anda disesuaikan menjadi {$date} pukul {$time} WIB. Mohon konfirmasi kesediaan waktu Anda. Terima kasih!",
-            'cancel' => "Halo {$record->patient_name}, janji temu Anda di {$branch} (Kode: {$record->code}) telah dibatalkan. Silakan hubungi kami jika Anda memerlukan jadwal konsultasi pengganti. Terima kasih!",
+            'reminder' => "Halo {$record->patient_name}, kami mengingatkan kembali jadwal janji temu Anda di {$branch} pada {$date} pukul {$time} WIB. Mohon hadir 10 menit lebih awal. Terima kasih!",
+            'reschedule' => "Halo {$record->patient_name}, mengenai janji temu Anda di {$branch}, jadwal kunjungan Anda disesuaikan menjadi {$date} pukul {$time} WIB. Mohon konfirmasi kesediaan waktu Anda. Terima kasih!",
+            'cancel' => "Halo {$record->patient_name}, janji temu Anda di {$branch} telah dibatalkan. Silakan hubungi kami jika Anda memerlukan jadwal konsultasi pengganti. Terima kasih!",
             default => "Halo {$record->patient_name}, janji temu Anda di {$branch} pada {$date} pukul {$time} WIB telah kami konfirmasi. Silakan datang sesuai jadwal.",
         };
     }
@@ -554,7 +564,7 @@ class AppointmentResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['code', 'patient_name', 'patient_phone'];
+        return ['patient_name', 'patient_phone', 'patient_email'];
     }
 
     public static function getPages(): array

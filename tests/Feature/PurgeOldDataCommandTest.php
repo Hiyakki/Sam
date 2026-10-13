@@ -48,7 +48,6 @@ class PurgeOldDataCommandTest extends TestCase
         // Janji temu 25 bulan lalu berstatus completed
         $oldDate = Carbon::now('Asia/Jakarta')->subMonths(25)->format('Y-m-d');
         $oldAppointment = Appointment::create([
-            'code' => 'SAM-OLD12345',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $oldDate,
@@ -66,7 +65,6 @@ class PurgeOldDataCommandTest extends TestCase
         // Janji temu baru (3 bulan lalu) tidak boleh disentuh
         $recentDate = Carbon::now('Asia/Jakarta')->subMonths(3)->format('Y-m-d');
         $recentAppointment = Appointment::create([
-            'code' => 'SAM-NEW12345',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $recentDate,
@@ -109,7 +107,6 @@ class PurgeOldDataCommandTest extends TestCase
 
         $oldDate = Carbon::now('Asia/Jakarta')->subMonths(30)->format('Y-m-d');
         $appointment = Appointment::create([
-            'code' => 'SAM-DRY12345',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $oldDate,

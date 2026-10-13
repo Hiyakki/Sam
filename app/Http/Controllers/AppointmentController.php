@@ -8,6 +8,7 @@ use App\Models\Branch;
 use App\Models\SiteSetting;
 use App\Services\SlotService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class AppointmentController extends Controller
@@ -54,21 +55,26 @@ class AppointmentController extends Controller
 
         $appointment = $slotService->book($bookData);
 
-        return redirect()->route('appointment.confirmation', ['code' => $appointment->code])
-            ->with('status', 'Janji temu Anda berhasil dibuat! Simpan kode janji untuk melacak status kunjungan.');
+        // Simpan ID janji di session (bukan flash) agar saat refresh tetap dapat ditampilkan
+        $request->session()->put('appointment_success_id', $appointment->id);
+
+        return redirect()->route('appointment.success');
     }
 
     /**
-     * Menampilkan halaman konfirmasi sukses pendaftaran janji temu.
+     * Menampilkan halaman sukses pendaftaran janji temu.
      */
-    public function confirmation(string $code): View
+    public function success(Request $request): View
     {
-        $appointment = Appointment::where('code', $code)
-            ->with(['branch', 'service'])
-            ->firstOrFail();
+        $appointmentId = $request->session()->get('appointment_success_id');
+        $appointment = null;
+
+        if ($appointmentId) {
+            $appointment = Appointment::with(['branch', 'service'])->find($appointmentId);
+        }
 
         $settings = SiteSetting::allCached();
 
-        return view('pages.appointment-confirmation', compact('appointment', 'settings'));
+        return view('pages.appointment-success', compact('appointment', 'settings'));
     }
 }

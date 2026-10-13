@@ -440,7 +440,7 @@
                         <span x-text="isSubmitting ? 'Memproses Pendaftaran...' : 'Konfirmasi & Ajukan Janji Temu'"></span>
                     </button>
                     <p class="text-center text-[11px] text-white/70 mt-3">
-                        Setelah pengajuan berhasil, Anda akan menerima Kode Janji Temu sebagai tanda bukti reservasi.
+                        Setelah pengajuan berhasil, tim kami akan mengonfirmasi jadwal kunjungan Anda melalui WhatsApp atau email.
                     </p>
                 </div>
             </div>

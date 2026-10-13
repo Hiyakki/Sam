@@ -22,7 +22,7 @@ class PrescriptionDownloadController extends Controller
 
         return Storage::disk('local')->download(
             $path,
-            "resep-{$appointment->code}.{$extension}",
+            "resep-janji-{$appointment->id}.{$extension}",
             ['Cache-Control' => 'no-store, private'],
         );
     }

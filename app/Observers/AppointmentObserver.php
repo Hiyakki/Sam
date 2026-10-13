@@ -43,7 +43,7 @@ class AppointmentObserver
                     $branchName = $appointment->branch?->name ?? 'SAM';
                     $dateStr = $appointment->appointment_date ? $appointment->appointment_date->format('d/m/Y') : '-';
                     $timeStr = substr((string) $appointment->start_time, 0, 5);
-                    $msg = "Halo Admin {$branchName}, terdapat janji temu baru masuk:\nKode: {$appointment->code}\nPasien: {$appointment->patient_name}\nWA: {$appointment->patient_phone}\nLayanan: {$appointment->service?->name}\nJadwal: {$dateStr} {$timeStr} WIB.";
+                    $msg = "Halo Admin {$branchName}, terdapat janji temu baru masuk:\nPasien: {$appointment->patient_name}\nWA: {$appointment->patient_phone}\nLayanan: {$appointment->service?->name}\nJadwal: {$dateStr} {$timeStr} WIB.";
                     $waSender->send($adminWa, $msg);
                 }
             } catch (\Throwable $e) {

@@ -18,7 +18,7 @@ class SeoRobotsHeaderMiddleware
         $isProduction = app()->isProduction();
 
         // 1. Kondisi wajib noindex, nofollow di SEMUA environment
-        $isConfirmation = $request->is('janji/konfirmasi/*');
+        $isConfirmation = $request->is('janji/berhasil') || $request->is('janji/*') || $request->is('janji');
         $isAdmin = $request->is('kelola-sam*');
         $isApi = $request->is('api/*');
         $isSearch = $request->hasAny(['cari', 'q', 'search']) && filled(

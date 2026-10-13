@@ -12,7 +12,7 @@ class FaqSeeder extends Seeder
         $faqs = [
             [
                 'question' => 'Bagaimana cara membuat janji di SAM Orthotic Prosthetic?',
-                'answer' => 'Anda dapat membuat janji melalui halaman <a href="/appointment">Appointment</a> di website ini. Pilih kantor, layanan, tanggal, dan jam yang tersedia, lalu isi data diri dan keluhan Anda. Setelah submit, Anda akan menerima kode janji melalui email.',
+                'answer' => 'Anda dapat membuat janji melalui halaman <a href="/appointment">Appointment</a> di website ini. Pilih kantor, layanan, tanggal, dan jam yang tersedia, lalu isi data diri dan keluhan Anda. Setelah submit, pendaftaran Anda akan diverifikasi oleh admin kami dan Anda akan menerima konfirmasi melalui WhatsApp atau email.',
                 'category' => 'Appointment',
                 'is_active' => true,
                 'show_on_home' => true,
@@ -44,7 +44,7 @@ class FaqSeeder extends Seeder
             ],
             [
                 'question' => 'Bagaimana cara mengubah atau membatalkan janji?',
-                'answer' => 'Gunakan link yang dikirimkan ke email Anda saat membuat janji, atau buka halaman <strong>/janji/{kode}</strong> menggunakan kode janji Anda. Dari sana, Anda dapat mengubah jadwal atau membatalkan janji selama H-1 sebelum tanggal janji.',
+                'answer' => 'Untuk perubahan jadwal atau pembatalan, silakan hubungi admin cabang kami melalui nomor WhatsApp atau telepon yang tercantum pada kontak kami. Perubahan jadwal dan pembatalan diproses langsung oleh tim admin kami.',
                 'category' => 'Appointment',
                 'is_active' => true,
                 'show_on_home' => true,

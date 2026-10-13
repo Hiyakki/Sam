@@ -19,7 +19,7 @@ class AppointmentCreatedPatientMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "[SAM] Konfirmasi Pendaftaran Janji Temu - {$this->appointment->code}",
+            subject: "[SAM] Konfirmasi Pendaftaran Janji Temu - {$this->appointment->patient_name}",
         );
     }
 

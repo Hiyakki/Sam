@@ -54,7 +54,6 @@ class Phase7NotificationTest extends TestCase
     public function test_appointment_created_queues_email_to_patient_and_admin(): void
     {
         $appointment = Appointment::create([
-            'code' => 'SAMNOTIF01',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => '2026-10-20',
@@ -87,7 +86,6 @@ class Phase7NotificationTest extends TestCase
     public function test_appointment_status_changed_queues_email_to_patient(): void
     {
         $appointment = Appointment::create([
-            'code' => 'SAMNOTIF02',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => '2026-10-21',
@@ -119,7 +117,6 @@ class Phase7NotificationTest extends TestCase
     public function test_appointment_rescheduled_queues_email_to_patient(): void
     {
         $appointment = Appointment::create([
-            'code' => 'SAMNOTIF03',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => '2026-10-22',
@@ -155,7 +152,6 @@ class Phase7NotificationTest extends TestCase
 
         // Janji 1: Memenuhi syarat (besok, confirmed, belum dikirim pengingat)
         $apptTarget = Appointment::create([
-            'code' => 'SAMREMIND01',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $tomorrow,
@@ -172,7 +168,6 @@ class Phase7NotificationTest extends TestCase
 
         // Janji 2: Besok tapi masih PENDING (tidak boleh dikirimi reminder)
         $apptPending = Appointment::create([
-            'code' => 'SAMREMIND02',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $tomorrow,
@@ -189,7 +184,6 @@ class Phase7NotificationTest extends TestCase
 
         // Janji 3: Besok, confirmed, tapi SUDAH pernah dikirim pengingat
         $apptSent = Appointment::create([
-            'code' => 'SAMREMIND03',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $tomorrow,
@@ -206,7 +200,6 @@ class Phase7NotificationTest extends TestCase
 
         // Janji 4: LUSA (belum waktunya H-1)
         $apptLusa = Appointment::create([
-            'code' => 'SAMREMIND04',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => $dayAfterTomorrow,
@@ -243,7 +236,7 @@ class Phase7NotificationTest extends TestCase
 
     public function test_all_mailables_implement_should_queue(): void
     {
-        $dummy = Appointment::make(['code' => 'TEST']);
+        $dummy = Appointment::make(['patient_name' => 'Budi Dummy']);
 
         $this->assertInstanceOf(ShouldQueue::class, new AppointmentCreatedPatientMail($dummy));
         $this->assertInstanceOf(ShouldQueue::class, new AppointmentCreatedAdminMail($dummy));

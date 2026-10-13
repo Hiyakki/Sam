@@ -19,7 +19,7 @@ class AppointmentRescheduledPatientMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "[SAM] Perubahan Jadwal Janji Temu - {$this->appointment->code}",
+            subject: "[SAM] Perubahan Jadwal Janji Temu - {$this->appointment->patient_name}",
         );
     }
 

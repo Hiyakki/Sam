@@ -170,10 +170,13 @@ class SeoAuditTest extends TestCase
      */
     public function test_admin_and_confirmation_pages_have_noindex_meta_and_headers(): void
     {
-        // 1. Konfirmasi janji: noindex di meta dan header
-        $confirmationResponse = $this->get('/janji/konfirmasi/TEST-CONFIRM-CODE');
-        $confirmationResponse->assertHeader('X-Robots-Tag', 'noindex, nofollow');
-        $confirmationResponse->assertSee('<meta name="robots" content="noindex, nofollow">', false);
+        // 1. Halaman sukses janji: noindex di meta dan header, dan route konfirmasi lama harus 404
+        $successResponse = $this->get('/janji/berhasil');
+        $successResponse->assertHeader('X-Robots-Tag', 'noindex, nofollow');
+        $successResponse->assertSee('<meta name="robots" content="noindex, nofollow">', false);
+
+        $oldConfirmationResponse = $this->get('/janji/konfirmasi/TEST-CONFIRM-CODE');
+        $oldConfirmationResponse->assertStatus(404);
 
         // 2. Admin panel login: noindex header
         $adminResponse = $this->get('/kelola-sam/login');

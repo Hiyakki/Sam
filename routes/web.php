@@ -41,9 +41,9 @@ Route::post('/appointment', [AppointmentController::class, 'store'])
     ->middleware('throttle:appointment.submission')
     ->name('appointment.store');
 
-Route::get('/janji/konfirmasi/{code}', [AppointmentController::class, 'confirmation'])
+Route::get('/janji/berhasil', [AppointmentController::class, 'success'])
     ->middleware('throttle:appointment.confirmation')
-    ->name('appointment.confirmation');
+    ->name('appointment.success');
 
 /*
 |--------------------------------------------------------------------------

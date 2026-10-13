@@ -68,7 +68,6 @@ class Phase9SecurityAndSeoTest extends TestCase
         ]);
 
         $appointment = Appointment::create([
-            'code' => 'SAMPRIVAT01',
             'branch_id' => $branch->id,
             'service_id' => $service->id,
             'appointment_date' => '2026-10-25',
@@ -93,7 +92,7 @@ class Phase9SecurityAndSeoTest extends TestCase
         $admin = User::factory()->create();
         $authenticated = $this->actingAs($admin)->get($route);
         $authenticated->assertStatus(200);
-        $authenticated->assertHeader('Content-Disposition', 'attachment; filename=resep-SAMPRIVAT01.pdf');
+        $authenticated->assertHeader('Content-Disposition', "attachment; filename=resep-janji-{$appointment->id}.pdf");
     }
 
     public function test_open_graph_and_meta_tags_exist_on_public_pages(): void

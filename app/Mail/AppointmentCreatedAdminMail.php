@@ -19,9 +19,11 @@ class AppointmentCreatedAdminMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         $branchName = $this->appointment->branch?->name ?? 'Cabang SAM';
+        $dateStr = $this->appointment->appointment_date ? $this->appointment->appointment_date->format('d/m/Y') : '';
+        $timeStr = substr((string) $this->appointment->start_time, 0, 5);
 
         return new Envelope(
-            subject: "[Janji Temu Baru - {$branchName}] {$this->appointment->patient_name} ({$this->appointment->code})",
+            subject: "[Janji Temu Baru - {$branchName}] {$this->appointment->patient_name} ({$dateStr} {$timeStr} WIB)",
         );
     }
 

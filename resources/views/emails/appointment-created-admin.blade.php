@@ -20,10 +20,6 @@
         <!-- Ringkasan Pasien & Kunjungan -->
         <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin: 20px 0;">
             <tr style="border-bottom: 1px solid #f0f0ee;">
-                <td style="padding: 8px 0; color: #869480; width: 140px;">Kode Janji:</td>
-                <td style="padding: 8px 0; font-weight: bold; font-family: monospace;">{{ $appointment->code }}</td>
-            </tr>
-            <tr style="border-bottom: 1px solid #f0f0ee;">
                 <td style="padding: 8px 0; color: #869480;">Nama Pasien:</td>
                 <td style="padding: 8px 0; font-weight: bold;">{{ $appointment->patient_name }} ({{ $appointment->patient_age }} Thn)</td>
             </tr>

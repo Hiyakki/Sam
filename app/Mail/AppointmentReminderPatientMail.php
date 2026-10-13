@@ -21,7 +21,7 @@ class AppointmentReminderPatientMail extends Mailable implements ShouldQueue
         $branchName = $this->appointment->branch?->name ?? 'SAM';
 
         return new Envelope(
-            subject: "[Pengingat SAM] Janji Temu Besok di {$branchName} - {$this->appointment->code}",
+            subject: "[Pengingat SAM] Janji Temu Besok di {$branchName} - {$this->appointment->patient_name}",
         );
     }
 

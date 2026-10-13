@@ -137,7 +137,6 @@ class Phase8WhatsAppTest extends TestCase
     public function test_filament_appointment_resource_generates_valid_whatsapp_url(): void
     {
         $appointment = Appointment::create([
-            'code' => 'SAMWA001',
             'branch_id' => $this->branch->id,
             'service_id' => $this->service->id,
             'appointment_date' => '2026-10-30',
@@ -155,6 +154,6 @@ class Phase8WhatsAppTest extends TestCase
 
         $this->assertStringStartsWith('https://wa.me/628123456789?text=', $url);
         $this->assertStringContainsString('Dewi%20Sartika', $url);
-        $this->assertStringContainsString('SAMWA001', $url);
+        $this->assertStringNotContainsString('kode', strtolower(urldecode($url)));
     }
 }

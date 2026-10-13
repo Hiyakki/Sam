@@ -12,7 +12,6 @@ use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class SlotService
@@ -285,10 +284,7 @@ class SlotService
             $endTime = $data['end_time'] ?? $matchingSlot['end'];
             $normalizedPhone = $this->normalizePhoneNumber((string) $data['patient_phone']);
 
-            $code = $this->generateUniqueCode();
-
             return Appointment::create([
-                'code' => $code,
                 'branch_id' => $branch->id,
                 'service_id' => $data['service_id'],
                 'appointment_date' => $dateString,
@@ -303,19 +299,6 @@ class SlotService
                 'status' => 'pending',
             ]);
         });
-    }
-
-    /**
-     * Menghasilkan kode janji acak unik (minimal 10 karakter).
-     */
-    public function generateUniqueCode(): string
-    {
-        do {
-            // Contoh format: SAM-7K9X2M4B (12 karakter total, sangat mudah dibaca)
-            $code = 'SAM'.strtoupper(Str::random(9));
-        } while (Appointment::where('code', $code)->exists());
-
-        return $code;
     }
 
     /**

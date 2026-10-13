@@ -157,7 +157,6 @@ class Phase5SlotServiceTest extends TestCase
 
         // Buat janji yang mengisi slot 08:00 (kapasitas 1)
         Appointment::create([
-            'code' => 'SAMTEST001A',
             'branch_id' => $this->branch->id,
             'service_id' => $this->serviceA->id,
             'appointment_date' => $targetDate->format('Y-m-d'),
@@ -233,7 +232,7 @@ class Phase5SlotServiceTest extends TestCase
         ]);
     }
 
-    public function test_booking_successful_and_creates_appointment_with_unique_code(): void
+    public function test_booking_successful_and_creates_appointment_without_code(): void
     {
         $targetDate = Carbon::now('Asia/Jakarta')->next(Carbon::WEDNESDAY);
 
@@ -252,7 +251,6 @@ class Phase5SlotServiceTest extends TestCase
         $this->assertInstanceOf(Appointment::class, $appointment);
         $this->assertDatabaseHas('appointments', ['id' => $appointment->id]);
         $this->assertEquals('pending', $appointment->status);
-        $this->assertGreaterThanOrEqual(10, strlen($appointment->code));
         $this->assertEquals('6281298765432', $appointment->patient_phone); // Normalisasi nomor
     }
 

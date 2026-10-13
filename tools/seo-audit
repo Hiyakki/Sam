@@ -60,7 +60,8 @@ $testCases = [
     $baseUrl . '/halaman-pasti-tidak-ada-404' => 'Kasus Uji: 404 Not Found (harus status 404, noindex)',
     $baseUrl . '/KATALOG' => 'Kasus Uji: Uppercase redirect (harus 301 ke /katalog)',
     $baseUrl . '/about/' => 'Kasus Uji: Trailing slash redirect (harus 301 ke /about)',
-    $baseUrl . '/janji/konfirmasi/TEST-CODE' => 'Kasus Uji: Konfirmasi Janji (harus noindex, nofollow)',
+    $baseUrl . '/janji/berhasil' => 'Kasus Uji: Sukses Janji Temu (harus noindex, nofollow)',
+    $baseUrl . '/janji/konfirmasi/TEST-CODE' => 'Kasus Uji: Route Konfirmasi Lama (harus 404 Not Found)',
 ];
 
 foreach (array_keys($testCases) as $testUrl) {

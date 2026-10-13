@@ -53,7 +53,7 @@ class SendAppointmentRemindersCommand extends Command
                     $waSender = app(WhatsAppSender::class);
                     $branchName = $appointment->branch?->name ?? 'SAM';
                     $timeStr = substr((string) $appointment->start_time, 0, 5);
-                    $msg = "Halo {$appointment->patient_name}, ini pengingat dari {$branchName}. Janji temu Anda terkonfirmasi untuk BESOK pukul {$timeStr} WIB (Kode: {$appointment->code}). Mohon hadir 10 menit lebih awal.";
+                    $msg = "Halo {$appointment->patient_name}, ini pengingat dari {$branchName}. Janji temu Anda terkonfirmasi untuk BESOK pukul {$timeStr} WIB. Mohon hadir 10 menit lebih awal.";
                     $waSender->send($appointment->patient_phone, $msg);
                 } catch (\Throwable $e) {
                     Log::warning("Gagal mengirim WA pengingat H-1: {$e->getMessage()}");
