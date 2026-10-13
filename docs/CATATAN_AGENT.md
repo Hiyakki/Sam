@@ -192,3 +192,70 @@ Karena pengiriman email menggunakan antrean database (`QUEUE_CONNECTION=database
 ```bash
 php artisan queue:work --sleep=3 --tries=3 --timeout=90
 ```
+
+---
+
+## 11. Implementasi & Audit SEO Lengkap (Cabang Git `seo-lengkap`)
+
+Bagian ini merangkum seluruh pekerjaan implementasi SEO on-page, SEO teknis, data terstruktur (JSON-LD), SEO lokal, panel admin, automated testing, dan dev tools yang diselesaikan pada cabang git `seo-lengkap`.
+
+### A. Migrasi Database Baru
+1. `database/migrations/2026_10_13_000001_add_seo_fields_to_products_and_categories_table.php`:
+   - Menambahkan kolom `meta_title` (nullable string 100) dan `meta_description` (nullable string 255) pada tabel `products`.
+   - Menambahkan kolom `meta_title`, `meta_description`, dan `intro_text` (nullable text) pada tabel `product_categories`.
+2. `database/migrations/2026_10_13_000002_create_redirects_table.php`:
+   - Membuat tabel `redirects` (`id`, `source_path` unique index, `target_path`, `status_code` default 301, timestamps) untuk melacak perubahan slug lama produk & kategori agar tidak terjadi link mati (dead links).
+
+### B. Service & Komponen Terpusat Baru
+1. `app/Support/Seo.php`:
+   - Service terpusat untuk membangun metadata per halaman (title unik <= 65 karakter, meta description 120-160 karakter unik, canonical absolut, Open Graph, Twitter card summary_large_image, theme-color navy).
+   - Mendukung fallback otomatis dan override dari `site_settings` serta kolom model produk/kategori.
+2. `app/Support/StructuredData.php`:
+   - Generator JSON-LD Schema.org terpusat: `WebSite` dengan SearchAction, `Organization`, `LocalBusiness` per cabang aktif (dengan konversi standar hari buka `Monday`–`Sunday`), `BreadcrumbList`, `FAQPage` (hanya dari FAQ aktif), dan `Product` (tanpa data fiktif offers/price).
+3. `app/Http/Middleware/SeoRedirectMiddleware.php`:
+   - Normalisasi URL: 301 redirect untuk huruf besar ke huruf kecil, penghapusan trailing slash, dan resolusi slug lama dari tabel `redirects`.
+4. `app/Http/Middleware/SeoRobotsHeaderMiddleware.php`:
+   - Menyematkan header `X-Robots-Tag: noindex, nofollow` pada halaman admin (`/kelola-sam`), konfirmasi janji, pencarian internal, respons API, dan error pages.
+   - Menyematkan `X-Robots-Tag: noindex` pada seluruh halaman publik bila lingkungan bukan `production`.
+5. `app/Http/Controllers/SitemapController.php`:
+   - Menyajikan `sitemap.xml` dinamis dengan `<loc>` absolut dan `<lastmod>` dari `updated_at` untuk seluruh halaman statis, cabang aktif, kategori aktif, dan produk aktif.
+   - Menyajikan `robots.txt` dinamis (Allow di production, Disallow di lingkungan uji).
+6. `app/Http/Controllers/BranchController.php`:
+   - Halaman khusus cabang `/cabang/{slug}` (`resources/views/pages/branch/show.blade.php`) untuk penguatan SEO lokal.
+7. `resources/views/components/seo.blade.php`:
+   - Komponen Blade terpadu yang merender seluruh tag SEO, Open Graph, Twitter Card, favicon lengkap (ico, 32px, 192px, 512px, apple-touch-icon), dan JSON-LD.
+8. `public/site.webmanifest`:
+   - Web App Manifest standar untuk PWA dan SEO mobile.
+
+### C. Pembaruan Antarmuka Admin Filament
+1. `ProductResource`:
+   - Tab "SEO & Metadata" dengan penghitung karakter dan Google SERP Preview interaktif.
+   - Kolom tabel dan filter "Konten Kurang" (<40 karakter deskripsi).
+2. `ProductCategoryResource`:
+   - Tab "SEO & Metadata" dengan SERP preview dan field `intro_text` (minimal ~100 kata).
+3. `SiteSettings`:
+   - Tab "SEO & Metadata Publik" untuk `seo.home_title`, `seo.home_description`, `seo.about_title`, `seo.about_description`, `seo.catalog_title`, `seo.catalog_description`, serta upload `seo.og_default_image` (1200x630).
+
+### D. Perbaikan On-Page & Heading Hierarchy
+- Footer di `resources/views/layouts/app.blade.php`: Judul kolom dinormalkan dari `<h4>` ke paragraf berbobot teks tebal, menghilangkan heading skip di seluruh website.
+- Detail produk di `resources/views/pages/catalog/show.blade.php`: Judul bagian dinormalkan menjadi `<h2>` dan kartu produk terkait menjadi `<h3>`.
+- Hero Beranda di `resources/views/pages/home/_hero.blade.php`: Kartu fitur dinormalkan tanpa tag heading sembarangan; gambar hero menggunakan `fetchpriority="high"`, WebP, dan dimensi eksplisit tanpa `lazy`.
+
+### E. Dev Audit Tooling & Testing
+- CLI Crawler: `tools/seo-audit` (merayapi 68 URL, 0 isu, 0 broken link). Laporan tersimpan di `storage/app/qa/seo-audit.csv`.
+- Headless Lighthouse: `tools/lighthouse-audit.mjs` (skrip audit mobile & desktop Chromium headless).
+- Automated Feature Test: `tests/Feature/SeoAuditTest.php` (8 test case komprehensif, 272 assertions). Seluruh test suite (133 tests, 669 assertions) lulus 100%.
+
+### F. Asumsi yang Diambil
+1. **Keputusan Produk (Mengikat):** Tetap satu admin tanpa role di `/kelola-sam`; `/janji/{code}` tidak ada (404); `/janji/konfirmasi/{code}` hanya layar sukses transaksional bertag `noindex, nofollow`; pembatalan/ubah jadwal hanya dapat dilakukan admin dari panel.
+2. **Ketiadaan Klaim Berlebihan:** Seluruh default title dan meta description menggunakan bahasa faktual Indonesia (contoh: "sejak 2014", "konsultasi gratis"), tanpa kata-kata superlatif yang tidak dapat dibuktikan ("terbaik", "nomor 1", "100% garansi").
+3. **Data Harga Produk:** Schema `Product` tidak menyertakan elemen `offers` atau harga fiktif karena website SAM tidak menampilkan harga publik langsung (harga didasarkan pada hasil asesmen klinis dan spesifikasi khusus pasien).
+4. **Proteksi Lingkungan Uji:** Di local/staging, `robots.txt` sengaja memblokir crawl (`Disallow: /`) dan menyertakan `X-Robots-Tag: noindex` agar mesin pencari tidak mengindeks situs lokal secara tidak sengaja. Di production, konfigurasi ini otomatis terbuka.
+
+### G. Hal-Hal yang Perlu Diisi oleh Pemilik/Administrator Situs
+1. **Isi Deskripsi Kategori (Intro Text):** Buka panel `/kelola-sam` > Kategori Produk, isi field "Teks Pengantar Kategori (Intro Text)" dengan penjelasan minimal 100 kata mengenai masing-masing kelompok alat (Orthosis, Prosthesis, dsb.).
+2. **Isi Meta Kustom (Bila Diperlukan):** Buka produk-produk unggulan dan isi meta title/description kustom pada tab SEO jika ingin kata kunci khusus di luar pola default otomatis.
+3. **Upload Default Social Share Image (`seo.og_default_image`):** Buka Pengaturan Situs > Tab SEO, upload foto branding SAM beresolusi 1200x630 piksel untuk tampilan pratinjau tautan media sosial.
+4. **Koordinat Geolokasi Cabang:** Lengkapi kolom latitude & longitude pada data cabang di database/panel jika ingin pin peta geo-koordinat muncul lengkap di schema `LocalBusiness`.
+5. **Konfigurasi Domain Produksi:** Saat deploy ke hosting, ubah `APP_URL=https://samorthotic.com` di `.env` produksi, pasang SSL HTTPS, dan kirim `sitemap.xml` ke Google Search Console. Detail lengkap tersedia di `docs/LAPORAN_SEO.md`.
+
