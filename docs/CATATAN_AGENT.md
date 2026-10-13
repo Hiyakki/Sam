@@ -303,4 +303,98 @@ Berdasarkan pencarian case-insensitive terhadap `code`, `kode`, `kode janji`, `S
    - Seluruh test file yang membuat appointment dengan dummy `'code' => 'SAM...'` (`Phase3AdminPanelTest`, `Phase5SlotServiceTest`, `Phase6AppointmentFormTest`, `Phase7NotificationTest`, `Phase8WhatsAppTest`, `Phase9SecurityAndSeoTest`, `AdminAppointmentActionsTest`, `AdminNotificationsTest`, `HardeningVerificationTest`, `ProductionSecurityTest`, `PurgeOldDataCommandTest`, `SeoAuditTest`).
    - Test spesifik yang menguji route `/janji/konfirmasi/{code}`, panjang kode unik, dan kode pada tampilan konfirmasi.
 
+### Implementasi Bagian 1: Penghapusan Kode Booking Sepenuhnya
+- **Migration Database:** Dibuat migration baru `2026_10_13_140000_drop_code_column_from_appointments_table.php` yang menjatuhkan index/unique dan kolom `code` dari tabel `appointments`. Method `down()` menambahkan kembali kolom `code` nullable sehingga rollback dan `migrate:fresh` tetap aman.
+- **Model & Service:** Kolom `code` dihapus dari `$fillable` model `Appointment`. Method `generateUniqueCode()` dan pengisian `code` pada `SlotService::bookSlot()` dihapus total.
+- **Rute & Layar Sukses Baru `/janji/berhasil`:**
+  - Rute lama `/janji/konfirmasi/{code}` dihapus (mengembalikan HTTP 404).
+  - Setelah pengajuan janji temu berhasil, ID janji disimpan di session dengan kunci khusus `session(['recent_appointment_id' => $appointment->id])` (bukan flash, sehingga refresh tetap menampilkan data).
+  - Dialihkan ke `/janji/berhasil` (`appointment.success`).
+  - Halaman menampilkan ringkasan minimal: Cabang, Layanan, Tanggal, Jam, Status "Menunggu konfirmasi admin", dan kontak WA/Telepon cabang untuk perubahan atau pembatalan jadwal. Tanpa kode booking, tanpa keluhan medis, tanpa path resep, dan nomor telepon tidak ditampilkan penuh.
+  - Jika session kosong atau kedaluwarsa (halaman diakses langsung), halaman menyajikan layar "Terima Kasih" yang ramah dengan tombol kembali ke Beranda tanpa data pasien.
+  - Halaman tetap diproteksi `noindex, nofollow` via meta tag dan `X-Robots-Tag` header, serta rate limit ketat.
+- **Notifikasi Email & WhatsApp:**
+  - Seluruh subjek dan isi email (`AppointmentCreatedPatientMail`, `AppointmentCreatedAdminMail`, `AppointmentRescheduledPatientMail`, `AppointmentStatusChangedPatientMail`, `AppointmentReminderPatientMail`) diperbarui: identifikasi janji murni berdasarkan Nama Pasien, Tanggal, Jam, Cabang, dan Layanan tanpa menyertakan kode.
+  - Template WhatsApp pada `AppointmentResource` dan `SendAppointmentRemindersCommand` diperbarui tanpa teks `(Kode: ...)`.
+- **Panel Admin Filament (`AppointmentResource`):**
+  - Kolom "Kode" dihapus dari tabel, infolist lihat detail, filter, dan pencarian global.
+  - Seluruh tombol aksi baris tabel (Chat WA, Lihat Detail, Ubah Jadwal, Selesai, Batalkan, dsb.) disatukan ke dalam **satu dropdown `ActionGroup`** berlabel "Aksi". Tabel tampil rapi dan bebas scroll horizontal pada resolusi 1280px.
+- **Komitmen Git Bagian 1:** Commit `a98afd4` - `feat(appointment): hapus kode booking, rute janji berhasil, dan rapikan aksi admin`.
 
+---
+
+### Implementasi Bagian 2: Fitur Ekspor Excel & CSV Janji Temu
+- **Library yang Digunakan:** `openspout/openspout` versi `^4.28` (v4.28.0). OpenSpout adalah pustaka streaming spreadsheet berkecepatan tinggi yang mendukung penulisan XLSX & CSV tanpa memakan banyak memori RAM.
+- **Komponen Utama:**
+  1. `App\Exports\AppointmentExport`:
+     - Menulis data secara streaming langsung ke file sementara tanpa menimbun seluruh koleksi di memori.
+     - **Proteksi Formula Injection:** Method `sanitizeFormula()` memeriksa nilai string yang diawali `=`, `+`, `-`, `@`, tab (`\t`), atau carriage return (`\r`), dan otomatis membubuhkan tanda petik tunggal (`'`) di depannya agar spreadsheet reader (Excel/Calc) tidak mengeksekusinya sebagai formula/makro berbahaya.
+     - **Format Nomor Telepon sebagai Teks:** Nomor telepon diformat dengan tanda petik awal atau string non-angka sehingga angka `0` atau `62` di awal tidak terpotong oleh Excel.
+     - **Sheet 1 ("Janji Temu"):**
+       - Kolom: No, Tanggal Janji (dd/mm/yyyy), Jam (HH:mm - HH:mm), Nama Pasien, Nomor Telepon, Email, Usia, Kantor Cabang, Layanan, Status (Bahasa Indonesia), Keluhan (hanya jika opsi dicentang), Catatan Admin, Resep (Ada/Tidak, tanpa file/path), Dibuat Pada (dd/mm/yyyy HH:mm).
+       - Gaya header: Latar belakang Navy (`#1E2A4A`), teks putih tebal (bold).
+       - Baris header dibekukan (freeze pane pada row 2: `setFreezeRow(2)`).
+       - AutoFilter diaktifkan pada seluruh kolom data.
+       - Lebar kolom diatur proporsional dan text wrapping diaktifkan pada sel teks panjang.
+     - **Sheet 2 ("Ringkasan"):**
+       - Judul "RINGKASAN EKSPOR JANJI TEMU".
+       - Parameter filter yang digunakan: Periode Waktu, Status yang Dipilih, Kantor Cabang, Layanan, Opsi Keluhan, dan Waktu Ekspor dalam zona waktu `Asia/Jakarta`.
+       - Total baris janji temu yang diekspor.
+       - Tabel rekapitulasi jumlah per Status Janji Temu.
+       - Tabel rekapitulasi jumlah per Layanan.
+       - Tabel rekapitulasi jumlah per Kantor Cabang.
+     - **Format CSV:** Menulis baris dengan UTF-8 BOM (`\xEF\xBB\xBF`) agar karakter aksen dan tanda baca Bahasa Indonesia langsung terbuka dengan rapi di Microsoft Excel.
+  2. `App\Services\AppointmentExportService`:
+     - Bertanggung jawab memproses filter, menghitung batas tanggal inklusif Asia/Jakarta, dan membangun query Eloquent dengan eager loading `with(['branch', 'service'])` (mencegah N+1 query).
+     - Mengalirkan data per chunk 500 baris (`$query->chunk(500, ...)`).
+     - Penamaan berkas sesuai konvensi: `janji-temu_{dari}_{sampai}_{ringkasan-status}.xlsx` (contoh: `janji-temu_2026-10-01_2026-10-31_dibatalkan.xlsx`, atau `janji-temu_semua-waktu_semua-status.xlsx`).
+     - Pencatatan Audit Log: Mencatat aktivitas ekspor ke log aplikasi (`Log::info('Janji temu diekspor oleh admin', ...)`) yang memuat ID user admin, format, nama berkas, parameter filter, dan jumlah baris **TANPA menyertakan data sensitif pasien**.
+  3. `App\Filament\Resources\AppointmentResource\Pages\ListAppointments`:
+     - Ditambahkan Header Action "Ekspor Excel" (`export_excel`) dengan modal interaktif.
+     - Modal Form:
+       - Radio "Periode berdasarkan": Tanggal Janji (`appointment_date`, default) atau Tanggal Dibuat (`created_at`).
+       - Select "Rentang Waktu": Semua Waktu, Hari Ini, Minggu Ini, Bulan Ini, Bulan Lalu, 3 Bulan Terakhir, Kustom.
+       - DatePicker "Dari Tanggal" & "Sampai Tanggal" (tampil jika Kustom dipilih; divalidasi `date_to >= date_from`).
+       - CheckboxList "Status Janji Temu": Menunggu, Dikonfirmasi, Selesai, Dibatalkan, Tidak Hadir (default semua tercentang, dilengkapi tombol "Pilih Semua" dan "Kosongkan" via `bulkToggleable()`).
+       - Select ganda untuk Cabang dan Layanan (default Semua).
+       - Toggle "Sertakan keluhan pasien" (default nonaktif dengan peringatan data kesehatan sensitif).
+       - Radio "Format Berkas": Excel (`.xlsx`, default) atau CSV (`.csv`).
+     - Validasi data kosong: Jika hasil query menghasilkan 0 baris, sistem menampilkan notifikasi *"Tidak ada data pada filter ini"* dan membatalkan pembuatan berkas.
+     - Unduhan langsung via `BinaryFileResponse` dengan flag `deleteFileAfterSend(true)`.
+
+---
+
+### Hasil Pengujian & Benchmark
+1. **Unit & Feature Test:**
+   - Dibuat berkas pengujian komprehensif `tests/Feature/AppointmentExportTest.php` (13 tes, 71 assertion):
+     - Filter rentang tanggal inklusif dan batas pergantian hari (pukul 23:30 WIB tidak bergeser hari).
+     - Filter `appointment_date` vs `created_at`.
+     - Filter status tunggal (misal hanya `cancelled`), kombinasi, dan semua status.
+     - Filter cabang dan layanan.
+     - Notifikasi saat hasil 0 baris tanpa membuat file.
+     - Validasi form (status kosong ditolak, tanggal sampai < dari ditolak).
+     - Toggle kolom keluhan (muncul jika aktif, absen jika mati).
+     - Kolom kode tidak ada di sheet.
+     - File resep tidak pernah diekspor (hanya indikator "Ada" / "Tidak").
+     - Proteksi formula injection (`=`, `+`, `-`, `@`, `\t` dinetralkan dengan tanda petik).
+     - Nomor telepon tersimpan utuh sebagai teks.
+     - Validasi struktur Sheet 1 dan Sheet 2 Ringkasan menggunakan OpenSpout Reader.
+     - Validasi berkas CSV dengan UTF-8 BOM.
+     - Penamaan berkas otomatis sesuai spesifikasi.
+     - Proteksi autentikasi: guest ditolak saat mengakses endpoint admin.
+     - **Uji Performa 5.000 Baris:** Berhasil mengekspor 5.000 baris dalam waktu ~1,6 detik dengan puncak memori tambahan < 4 MB (jauh di bawah batas 10 detik dan 80 MB).
+2. **Rangkaian Tes Keseluruhan Proyek:**
+   - Seluruh **153 tes** (789 assertion) di proyek lulus dengan status hijau (100% pass).
+
+---
+
+### Hal yang Perlu Diperiksa oleh Pengguna
+1. **Uji Ekspor dari Admin Panel:**
+   - Masuk ke panel admin di `/kelola-sam` -> Janji Temu.
+   - Klik tombol "Ekspor Excel" di kanan atas tabel.
+   - Coba ekspor dengan berbagai variasi filter: Semua Waktu, Bulan Ini, hanya Dibatalkan, rentang Kustom, dengan/tanpa Keluhan Pasien, format XLSX dan CSV.
+   - Buka berkas hasil unduhan di Microsoft Excel atau Google Sheets untuk memverifikasi tampilan Sheet Janji Temu (header navy, freeze row, nomor telepon utuh) dan Sheet Ringkasan.
+2. **Uji Reservasi Pasien Baru:**
+   - Buka formulir publik di `/appointment`.
+   - Ajukan reservasi janji temu dan periksa pengalihan ke `/janji/berhasil`.
+   - Pastikan halaman konfirmasi menampilkan ringkasan bersih tanpa kode booking, dan rute lama `/janji/konfirmasi/...` mengembalikan 404 Not Found.
