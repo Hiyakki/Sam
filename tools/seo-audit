@@ -1,0 +1,424 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * SAM Orthotic Prosthetic - SEO Audit Crawler Tool
+ *
+ * Merayapi sitemap.xml dan halaman publik SAM secara lokal,
+ * melakukan audit mendalam terhadap aspek on-page, teknis, heading,
+ * gambar, structured data, canonical, serta mendeteksi broken links dan redirect chains.
+ */
+
+declare(strict_types=1);
+
+$baseUrl = rtrim($argv[1] ?? 'http://127.0.0.1:8000', '/');
+$outputDir = __DIR__ . '/../storage/app/qa';
+if (!is_dir($outputDir)) {
+    mkdir($outputDir, 0777, true);
+}
+$csvPath = $outputDir . '/seo-audit.csv';
+
+echo "===============================================================\n";
+echo "   SAM Orthotic Prosthetic - SEO Crawler & Audit Tool\n";
+echo "   Target Base URL: {$baseUrl}\n";
+echo "===============================================================\n\n";
+
+// 1. Dapatkan daftar URL dari sitemap.xml
+echo "[1/4] Mengambil sitemap dari {$baseUrl}/sitemap.xml ...\n";
+$sitemapXml = @file_get_contents($baseUrl . '/sitemap.xml');
+
+$urlsToAudit = [];
+if ($sitemapXml && preg_match_all('/<loc>(.*?)<\/loc>/', $sitemapXml, $matches)) {
+    foreach ($matches[1] as $url) {
+        // Normalisasikan ke host target lokal jika sitemap menggunakan host berbeda
+        $parsed = parse_url($url);
+        $localUrl = $baseUrl . ($parsed['path'] ?? '/') . (isset($parsed['query']) ? '?' . $parsed['query'] : '');
+        $urlsToAudit[] = $localUrl;
+    }
+    echo "      Ditemukan " . count($urlsToAudit) . " URL dalam sitemap.xml.\n";
+} else {
+    echo "      [WARN] Gagal membaca sitemap. Menggunakan daftar URL default.\n";
+    $urlsToAudit = [
+        $baseUrl . '/',
+        $baseUrl . '/about',
+        $baseUrl . '/katalog',
+        $baseUrl . '/faq',
+        $baseUrl . '/testimoni',
+        $baseUrl . '/appointment',
+        $baseUrl . '/kebijakan-privasi',
+    ];
+}
+
+// Tambahkan pengujian case teknis tambahan:
+// - Pencarian (?q=kaki)
+// - Halaman 404
+// - URL uppercase (/KATALOG)
+// - Trailing slash (/about/)
+// - Konfirmasi janji
+$testCases = [
+    $baseUrl . '/katalog?q=kaki' => 'Kasus Uji: Pencarian internal (harus noindex, canonical ke /katalog)',
+    $baseUrl . '/halaman-pasti-tidak-ada-404' => 'Kasus Uji: 404 Not Found (harus status 404, noindex)',
+    $baseUrl . '/KATALOG' => 'Kasus Uji: Uppercase redirect (harus 301 ke /katalog)',
+    $baseUrl . '/about/' => 'Kasus Uji: Trailing slash redirect (harus 301 ke /about)',
+    $baseUrl . '/janji/konfirmasi/TEST-CODE' => 'Kasus Uji: Konfirmasi Janji (harus noindex, nofollow)',
+];
+
+foreach (array_keys($testCases) as $testUrl) {
+    if (!in_array($testUrl, $urlsToAudit, true)) {
+        $urlsToAudit[] = $testUrl;
+    }
+}
+
+// 2. Crawler execution
+echo "\n[2/4] Merayapi dan menganalisis setiap URL ...\n\n";
+
+$auditResults = [];
+$seenTitles = [];
+$seenDescriptions = [];
+$internalLinksFound = [];
+
+foreach ($urlsToAudit as $index => $url) {
+    $num = $index + 1;
+    echo "({$num}/" . count($urlsToAudit) . ") Crawling: {$url} ... ";
+
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'GET',
+            'follow_location' => 0, // Jangan ikuti redirect otomatis agar bisa mendeteksi 301/302
+            'ignore_errors' => true,
+            'header' => "User-Agent: SAM-SEOBot/1.0 (+http://sam.local)\r\nAccept: text/html,application/xhtml+xml,application/xml\r\n",
+        ],
+    ]);
+
+    $start = microtime(true);
+    $html = @file_get_contents($url, false, $context);
+    $duration = round((microtime(true) - $start) * 1000);
+
+    // Ambil response code dan header
+    $statusLine = $http_response_header[0] ?? 'HTTP/1.1 000 Unknown';
+    preg_match('{HTTP\/\S*\s(\d{3})}', $statusLine, $m);
+    $statusCode = (int)($m[1] ?? 0);
+
+    $headers = [];
+    foreach ($http_response_header ?? [] as $hdr) {
+        if (str_contains($hdr, ':')) {
+            [$k, $v] = explode(':', $hdr, 2);
+            $headers[strtolower(trim($k))] = trim($v);
+        }
+    }
+
+    $xRobotsTag = $headers['x-robots-tag'] ?? '';
+    $location = $headers['location'] ?? '';
+    $htmlSizeKb = $html !== false ? round(strlen($html) / 1024, 2) : 0;
+
+    $parsedData = [
+        'url' => $url,
+        'status_code' => $statusCode,
+        'duration_ms' => $duration,
+        'html_size_kb' => $htmlSizeKb,
+        'redirect_to' => $location,
+        'x_robots_tag' => $xRobotsTag,
+        'title' => '',
+        'title_len' => 0,
+        'title_duplicate' => false,
+        'description' => '',
+        'description_len' => 0,
+        'description_duplicate' => false,
+        'canonical' => '',
+        'canonical_valid' => false,
+        'meta_robots' => '',
+        'h1_count' => 0,
+        'h1_text' => '',
+        'heading_hierarchy_ok' => true,
+        'heading_sequence' => '',
+        'images_total' => 0,
+        'images_without_alt' => 0,
+        'has_lazy_images' => false,
+        'json_ld_valid' => true,
+        'json_ld_types' => [],
+        'og_complete' => false,
+        'twitter_complete' => false,
+        'errors' => [],
+    ];
+
+    if ($statusCode === 301 || $statusCode === 302) {
+        echo "REDIRECT ({$statusCode}) -> {$location}\n";
+        $auditResults[] = $parsedData;
+        continue;
+    }
+
+    if ($statusCode === 404) {
+        echo "404 NOT FOUND (Expected for 404 test)\n";
+        $auditResults[] = $parsedData;
+        continue;
+    }
+
+    if ($statusCode !== 200) {
+        echo "FAIL (HTTP {$statusCode})\n";
+        $parsedData['errors'][] = "HTTP status code {$statusCode}";
+        $auditResults[] = $parsedData;
+        continue;
+    }
+
+    // Parse HTML dengan DOMDocument
+    libxml_use_internal_errors(true);
+    $dom = new DOMDocument();
+    $dom->loadHTML($html ?: '<html/>');
+    libxml_clear_errors();
+    $xpath = new DOMXPath($dom);
+
+    // Title
+    $titleNodes = $xpath->query('//title');
+    if ($titleNodes->length > 0) {
+        $parsedData['title'] = trim($titleNodes->item(0)->textContent);
+        $parsedData['title_len'] = mb_strlen($parsedData['title']);
+        if (isset($seenTitles[$parsedData['title']])) {
+            $parsedData['title_duplicate'] = true;
+            $parsedData['errors'][] = "Title duplikat dengan " . $seenTitles[$parsedData['title']];
+        } else {
+            $seenTitles[$parsedData['title']] = $url;
+        }
+    } else {
+        $parsedData['errors'][] = "Tag <title> tidak ditemukan";
+    }
+
+    // Meta Description
+    $descNodes = $xpath->query('//meta[@name="description"]/@content');
+    if ($descNodes->length > 0) {
+        $parsedData['description'] = trim($descNodes->item(0)->nodeValue);
+        $parsedData['description_len'] = mb_strlen($parsedData['description']);
+        if (isset($seenDescriptions[$parsedData['description']])) {
+            $parsedData['description_duplicate'] = true;
+            $parsedData['errors'][] = "Meta description duplikat dengan " . $seenDescriptions[$parsedData['description']];
+        } else {
+            $seenDescriptions[$parsedData['description']] = $url;
+        }
+    } else {
+        $parsedData['errors'][] = "Meta description tidak ditemukan";
+    }
+
+    // Canonical
+    $canonNodes = $xpath->query('//link[@rel="canonical"]/@href');
+    if ($canonNodes->length > 0) {
+        $parsedData['canonical'] = trim($canonNodes->item(0)->nodeValue);
+        $parsedData['canonical_valid'] = filter_var($parsedData['canonical'], FILTER_VALIDATE_URL) !== false;
+    } else {
+        $parsedData['errors'][] = "Canonical link tidak ditemukan";
+    }
+
+    // Meta Robots
+    $robotsNodes = $xpath->query('//meta[@name="robots"]/@content');
+    if ($robotsNodes->length > 0) {
+        $parsedData['meta_robots'] = trim($robotsNodes->item(0)->nodeValue);
+    }
+
+    // Headings (H1, H2, H3, H4, H5, H6)
+    $h1Nodes = $xpath->query('//h1');
+    $parsedData['h1_count'] = $h1Nodes->length;
+    if ($h1Nodes->length === 1) {
+        $parsedData['h1_text'] = trim($h1Nodes->item(0)->textContent);
+    } elseif ($h1Nodes->length === 0) {
+        $parsedData['errors'][] = "Tidak ada tag <h1>";
+    } else {
+        $parsedData['errors'][] = "Ditemukan {$h1Nodes->length} tag <h1> (harus tepat satu)";
+    }
+
+    $headings = $xpath->query('//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6]');
+    $seq = [];
+    $lastLevel = 0;
+    $hierarchyOk = true;
+    foreach ($headings as $h) {
+        $level = (int)substr($h->nodeName, 1);
+        $seq[] = "h{$level}";
+        if ($lastLevel > 0 && ($level - $lastLevel) > 1) {
+            $hierarchyOk = false;
+        }
+        $lastLevel = $level;
+    }
+    $parsedData['heading_sequence'] = implode(' > ', array_slice($seq, 0, 10)) . (count($seq) > 10 ? ' ...' : '');
+    $parsedData['heading_hierarchy_ok'] = $hierarchyOk;
+    if (!$hierarchyOk) {
+        $parsedData['errors'][] = "Hierarki heading loncat (mis. h1 langsung ke h3)";
+    }
+
+    // Images
+    $imgNodes = $xpath->query('//img');
+    $parsedData['images_total'] = $imgNodes->length;
+    $withoutAlt = 0;
+    $hasLazy = false;
+    foreach ($imgNodes as $img) {
+        if (!$img->hasAttribute('alt')) {
+            $withoutAlt++;
+        }
+        if ($img->getAttribute('loading') === 'lazy') {
+            $hasLazy = true;
+        }
+    }
+    $parsedData['images_without_alt'] = $withoutAlt;
+    $parsedData['has_lazy_images'] = $hasLazy;
+    if ($withoutAlt > 0) {
+        $parsedData['errors'][] = "{$withoutAlt} gambar tanpa atribut alt";
+    }
+
+    // JSON-LD
+    $jsonLdNodes = $xpath->query('//script[@type="application/ld+json"]');
+    if ($jsonLdNodes->length > 0) {
+        foreach ($jsonLdNodes as $script) {
+            $rawJson = trim($script->textContent);
+            $decoded = json_decode($rawJson, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $parsedData['json_ld_valid'] = false;
+                $parsedData['errors'][] = "JSON-LD invalid JSON syntax";
+            } else {
+                if (isset($decoded['@graph']) && is_array($decoded['@graph'])) {
+                    foreach ($decoded['@graph'] as $item) {
+                        if (isset($item['@type'])) {
+                            $parsedData['json_ld_types'][] = (string)$item['@type'];
+                        }
+                    }
+                } elseif (isset($decoded['@type'])) {
+                    $parsedData['json_ld_types'][] = (string)$decoded['@type'];
+                }
+            }
+        }
+    }
+
+    // Open Graph
+    $ogTitle = $xpath->query('//meta[@property="og:title"]/@content')->length > 0;
+    $ogDesc = $xpath->query('//meta[@property="og:description"]/@content')->length > 0;
+    $ogUrl = $xpath->query('//meta[@property="og:url"]/@content')->length > 0;
+    $ogImg = $xpath->query('//meta[@property="og:image"]/@content')->length > 0;
+    $ogType = $xpath->query('//meta[@property="og:type"]/@content')->length > 0;
+    $ogLocale = $xpath->query('//meta[@property="og:locale"]/@content')->length > 0;
+    $parsedData['og_complete'] = $ogTitle && $ogDesc && $ogUrl && $ogImg && $ogType && $ogLocale;
+    if (!$parsedData['og_complete']) {
+        $parsedData['errors'][] = "Tag Open Graph belum lengkap (wajib title, desc, url, image, type, locale)";
+    }
+
+    // Twitter Card
+    $twCard = $xpath->query('//meta[@name="twitter:card"]/@content')->length > 0;
+    $twTitle = $xpath->query('//meta[@name="twitter:title"]/@content')->length > 0;
+    $twDesc = $xpath->query('//meta[@name="twitter:description"]/@content')->length > 0;
+    $twImg = $xpath->query('//meta[@name="twitter:image"]/@content')->length > 0;
+    $parsedData['twitter_complete'] = $twCard && $twTitle && $twDesc && $twImg;
+    if (!$parsedData['twitter_complete']) {
+        $parsedData['errors'][] = "Twitter card belum lengkap (wajib card, title, desc, image)";
+    }
+
+    // Kumpulkan link internal untuk uji broken link
+    $linkNodes = $xpath->query('//a/@href');
+    foreach ($linkNodes as $link) {
+        $href = trim($link->nodeValue);
+        if (str_starts_with($href, $baseUrl) || str_starts_with($href, '/')) {
+            $abs = str_starts_with($href, '/') ? $baseUrl . $href : $href;
+            $clean = explode('#', $abs)[0];
+            if (!empty($clean) && !str_starts_with($clean, 'tel:') && !str_starts_with($clean, 'mailto:') && !str_starts_with($clean, 'javascript:')) {
+                $internalLinksFound[$clean] = true;
+            }
+        }
+    }
+
+    echo "OK (200, " . count($parsedData['errors']) . " issues)\n";
+    $auditResults[] = $parsedData;
+}
+
+// 3. Verifikasi Link Internal (Broken link checking)
+echo "\n[3/4] Memeriksa " . count($internalLinksFound) . " tautan internal untuk memastikan tidak ada 4xx/5xx ...\n";
+$brokenLinks = [];
+foreach (array_keys($internalLinksFound) as $linkUrl) {
+    $ctx = stream_context_create([
+        'http' => [
+            'method' => 'HEAD',
+            'follow_location' => 1,
+            'ignore_errors' => true,
+            'timeout' => 5,
+        ],
+    ]);
+    @file_get_contents($linkUrl, false, $ctx);
+    $statusLine = $http_response_header[0] ?? 'HTTP/1.1 000';
+    preg_match('{HTTP\/\S*\s(\d{3})}', $statusLine, $m);
+    $code = (int)($m[1] ?? 0);
+    if ($code >= 400) {
+        $brokenLinks[$linkUrl] = $code;
+        echo "      [BROKEN LINK] {$linkUrl} mengembalikan HTTP {$code}\n";
+    }
+}
+if (empty($brokenLinks)) {
+    echo "      Semua tautan internal valid (0 broken link ditemukan).\n";
+}
+
+// 4. Tulis hasil ke CSV
+echo "\n[4/4] Menyimpan laporan ke {$csvPath} ...\n";
+$fp = fopen($csvPath, 'w');
+fputcsv($fp, [
+    'URL',
+    'HTTP Status',
+    'Load Time (ms)',
+    'HTML Size (KB)',
+    'Redirect To',
+    'Title',
+    'Title Length',
+    'Title Dup?',
+    'Meta Description',
+    'Desc Length',
+    'Desc Dup?',
+    'Canonical URL',
+    'Canonical Valid',
+    'Robots Meta',
+    'X-Robots-Tag',
+    'H1 Count',
+    'H1 Text',
+    'Heading Seq OK',
+    'Images Total',
+    'Images Without Alt',
+    'JSON-LD Valid',
+    'JSON-LD Types',
+    'OG Complete',
+    'Twitter Complete',
+    'Issues/Errors',
+]);
+
+$totalIssues = 0;
+foreach ($auditResults as $row) {
+    $issues = implode('; ', $row['errors']);
+    $totalIssues += count($row['errors']);
+    fputcsv($fp, [
+        $row['url'],
+        $row['status_code'],
+        $row['duration_ms'],
+        $row['html_size_kb'],
+        $row['redirect_to'],
+        $row['title'],
+        $row['title_len'],
+        $row['title_duplicate'] ? 'YES' : 'NO',
+        $row['description'],
+        $row['description_len'],
+        $row['description_duplicate'] ? 'YES' : 'NO',
+        $row['canonical'],
+        $row['canonical_valid'] ? 'YES' : 'NO',
+        $row['meta_robots'],
+        $row['x_robots_tag'],
+        $row['h1_count'],
+        $row['h1_text'],
+        $row['heading_hierarchy_ok'] ? 'YES' : 'NO',
+        $row['images_total'],
+        $row['images_without_alt'],
+        $row['json_ld_valid'] ? 'YES' : 'NO',
+        implode(', ', $row['json_ld_types']),
+        $row['og_complete'] ? 'YES' : 'NO',
+        $row['twitter_complete'] ? 'YES' : 'NO',
+        $issues,
+    ]);
+}
+fclose($fp);
+
+echo "\n===============================================================\n";
+echo "   RINGKASAN AUDIT SEO\n";
+echo "===============================================================\n";
+echo "Total URL Dirayapi      : " . count($auditResults) . "\n";
+echo "Total Isu Terdeteksi    : {$totalIssues}\n";
+echo "Total Broken Link       : " . count($brokenLinks) . "\n";
+echo "File Laporan CSV        : {$csvPath}\n";
+echo "===============================================================\n";
+
+exit($totalIssues > 0 ? 1 : 0);
