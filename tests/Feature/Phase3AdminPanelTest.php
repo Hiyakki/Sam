@@ -30,6 +30,21 @@ class Phase3AdminPanelTest extends TestCase
         $response->assertStatus(404);
     }
 
+    public function test_password_reset_routes_are_disabled(): void
+    {
+        $this->get('/kelola-sam/password-reset/request')->assertStatus(404);
+        $this->get('/kelola-sam/password-reset/reset')->assertStatus(404);
+    }
+
+    public function test_login_page_does_not_contain_forgot_password_link(): void
+    {
+        $response = $this->get('/kelola-sam/login');
+
+        $response->assertOk();
+        $response->assertDontSee('Lupa kata sandi');
+        $response->assertDontSee('password-reset');
+    }
+
     public function test_unauthenticated_user_is_redirected_to_login(): void
     {
         $response = $this->get('/kelola-sam');

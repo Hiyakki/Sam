@@ -294,7 +294,7 @@ Contoh key: `home.hero_title`, `home.hero_subtitle`, `home.cta_text`, `home.adva
 **Tujuan:** admin dapat mengelola semua data.
 
 1. Konfigurasi panel Filament dengan path **bukan `/admin`** (misal `/kelola-sam`).
-2. Akses panel hanya untuk user yang ada (satu akun). **Matikan registrasi**. Aktifkan "lupa password" via email.
+2. Akses panel hanya untuk user yang ada (satu akun). **Matikan registrasi** dan **nonaktifkan lupa password** (reset password dikelola internal/CLI jika diperlukan).
 3. Aktifkan **2FA** bila tersedia di versi Filament yang dipakai.
 4. Buat Resource:
    - **BranchResource**: CRUD cabang. Di form: relasi layanan (multi-select / checkbox) dan repeater jadwal mingguan (`branch_schedules`: hari, buka/tutup, jam buka-tutup, durasi slot, kuota).
@@ -308,7 +308,7 @@ Contoh key: `home.hero_title`, `home.hero_subtitle`, `home.cta_text`, `home.adva
    - Pengaturan "Hapus" untuk FAQ dan testimoni memakai soft delete, jadi tidak hilang permanen karena salah klik (sediakan juga aksi "hapus permanen" bagi admin).
 5. Dashboard: widget jumlah janji hari ini, janji pending, dan 5 janji terdekat.
 
-**Checklist:** admin dapat login, membuat cabang baru lengkap dengan layanan dan jadwal, menambah hari libur, mengelola produk, dan mengubah teks Home. Tidak ada halaman register. URL `/admin` mengembalikan 404.
+**Checklist:** admin dapat login, membuat cabang baru lengkap dengan layanan dan jadwal, menambah hari libur, mengelola produk, dan mengubah teks Home. Tidak ada halaman register maupun lupa password. URL `/admin` mengembalikan 404.
 
 ---
 

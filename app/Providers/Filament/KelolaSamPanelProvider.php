@@ -33,8 +33,7 @@ class KelolaSamPanelProvider extends PanelProvider
             ->id('kelola-sam')
             ->path('kelola-sam')
             ->login(Login::class)
-            ->passwordReset()
-            // Registrasi DINONAKTIFKAN — tidak ada ->registration()
+            // Registrasi dan Lupa Password DINONAKTIFKAN
             ->brandName('SAM Admin')
             ->brandLogo(fn () => asset('images/logo-sam.png'))
             ->brandLogoHeight('2.5rem')
