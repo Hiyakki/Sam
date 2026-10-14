@@ -398,3 +398,31 @@ Berdasarkan pencarian case-insensitive terhadap `code`, `kode`, `kode janji`, `S
    - Buka formulir publik di `/appointment`.
    - Ajukan reservasi janji temu dan periksa pengalihan ke `/janji/berhasil`.
    - Pastikan halaman konfirmasi menampilkan ringkasan bersih tanpa kode booking, dan rute lama `/janji/konfirmasi/...` mengembalikan 404 Not Found.
+
+---
+
+## Diagnosis Kelambatan Aplikasi di Lingkungan Lokal (Windows + Laragon)
+
+**Cabang Git:** `diagnosis-lambat`  
+**Dokumen Laporan Penuh:** [`docs/LAPORAN_DIAGNOSIS_LAMBAT.md`](file:///d:/SAM/docs/LAPORAN_DIAGNOSIS_LAMBAT.md)
+
+### Ringkasan Hasil Diagnosis & Temuan Empiris
+1. **Bukan Masalah Database:** Total durasi query database pada halaman publik hanya berkisar **13 ms - 43 ms**. Latensi koneksi MySQL lokal via `127.0.0.1` sangat cepat (**~8.1 ms**). Menghilangkan seluruh query database pada Home melalui memoization hanya memangkas waktu sebesar ~29 ms (5%).
+2. **Penyebab Utama 1: OPcache Tidak Aktif di PHP 8.3 Laragon (Kontribusi 75% - 85% TTFB):**
+   - Rute kosong tanpa DB dan tanpa view memakan waktu **494.58 ms**.
+   - Waktu boot Laravel berkisar **404 - 448 ms** pada setiap request karena PHP harus membaca dan mengompilasi ribuan berkas sumber PHP dari drive Windows NTFS berulang-ulang tanpa cache memori opcode.
+3. **Penyebab Utama 2: `php artisan serve` Bersifat Single-Thread (Antrean Serial):**
+   - Pengujian 10 request bersamaan menghasilkan total waktu **5,888 ms** di mana request diselesaikan satu per satu secara serial (Request 1: 642 ms ... Request 10: 5,882 ms).
+   - Saat browser meminta HTML bersamaan dengan gambar, script Vite, stylesheet, dan font, browser terblokir dalam antrean tunggu serial hingga berdetik-detik.
+4. **Penyebab Utama 3: Aset Gambar Raksasa:**
+   - Halaman Home mentransfer **9.18 MB** aset, di antaranya `logo-sam.png` (**1.28 MB**) dan gambar setting (**1.16 MB**) yang belum dikompresi ke WebP.
+5. **Overhead di Kode Aplikasi (Perlu Diperbaiki di Kemudian Hari):**
+   - `SeoRedirectMiddleware` memeriksa `Schema::hasTable('redirects')` (query ke `information_schema.tables`) pada setiap request HTTP GET (overhead 5 - 19 ms).
+   - Driver session & cache menggunakan `database` sehingga menambah 3-4 query MySQL per request.
+   - Font Google dimuat secara blocking dari server eksternal (durasi 117 - 255 ms).
+   - Form admin Filament memakan waktu rendering CPU 400 - 900 ms tanpa OPcache.
+
+### Rekomendasi Solusi Cepat untuk Lingkungan Lokal:
+- Aktifkan ekstensi Zend OPcache di `C:\laragon\bin\php\php-8.3.35-Win32-vs16-x64\php.ini` (`zend_extension=opcache`, `opcache.enable=1`, `opcache.enable_cli=1`).
+- Jalankan artisan serve dengan multi-worker: `$env:PHP_CLI_SERVER_WORKERS=4; php artisan serve`.
+- Tambahkan folder proyek `d:\SAM` ke Exclusion Windows Defender untuk mereduksi latensi I/O NTFS.
