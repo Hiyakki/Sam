@@ -91,7 +91,7 @@ class ProductResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('meta_title')
                             ->label('Meta Title')
-                            ->placeholder(fn (Forms\Get $get) => ($get('name') ?: 'Nama Produk') . ' - SAM Orthotic Prosthetic')
+                            ->placeholder(fn (Forms\Get $get) => ($get('name') ?: 'Nama Produk').' - SAM Orthotic Prosthetic')
                             ->maxLength(70)
                             ->live(debounce: 400)
                             ->helperText('Rekomendasi: 50–60 karakter. Teks judul biru di hasil pencarian Google.'),
@@ -108,9 +108,9 @@ class ProductResource extends Resource
                             ->label('Pratinjau Hasil Pencarian Google')
                             ->view('filament.components.google-preview')
                             ->viewData(fn (Forms\Get $get, ?Product $record) => [
-                                'title' => $get('meta_title') ?: (($get('name') ?: 'Nama Produk') . ' - ' . ($get('function') ?: 'Alat Bantu Gerak') . ' | SAM Orthotic Prosthetic'),
-                                'url' => url('/katalog/' . ($get('slug') ?: 'slug-produk')),
-                                'description' => $get('meta_description') ?: ($get('function') ? ($get('function') . '. ' . strip_tags((string) $get('description'))) : strip_tags((string) $get('description'))),
+                                'title' => $get('meta_title') ?: (($get('name') ?: 'Nama Produk').' - '.($get('function') ?: 'Alat Bantu Gerak').' | SAM Orthotic Prosthetic'),
+                                'url' => url('/katalog/'.($get('slug') ?: 'slug-produk')),
+                                'description' => $get('meta_description') ?: ($get('function') ? ($get('function').'. '.strip_tags((string) $get('description'))) : strip_tags((string) $get('description'))),
                             ]),
                     ])->collapsible(),
 

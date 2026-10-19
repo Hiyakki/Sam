@@ -118,9 +118,9 @@ class HomePageData
     protected static function getGalleryPhotos(): array
     {
         $settings = SiteSetting::allCached();
-        $gallerySetting = $settings['general.gallery'] ?? [];
+        $gallerySetting = $settings['general.gallery'] ?? null;
 
-        if (! empty($gallerySetting) && is_array($gallerySetting)) {
+        if ($gallerySetting !== null && is_array($gallerySetting)) {
             $valid = [];
             foreach ($gallerySetting as $photo) {
                 if (! empty($photo['image'])) {
@@ -131,9 +131,8 @@ class HomePageData
                     ];
                 }
             }
-            if (count($valid) >= 3) {
-                return $valid;
-            }
+
+            return $valid;
         }
 
         $sitePhotos = [

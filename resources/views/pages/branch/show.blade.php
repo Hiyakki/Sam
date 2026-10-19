@@ -103,40 +103,97 @@
             </div>
 
             <!-- Jam Operasional -->
-            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-xs space-y-4">
-                <h2 class="text-xl font-bold font-['Playfair_Display'] text-primary">
-                    Jadwal Operasional Klinik
-                </h2>
-                <p class="text-xs text-text-muted">
-                    {{ $branch->operating_hours_summary }}
-                </p>
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-xs space-y-5">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-xl font-bold font-['Playfair_Display'] text-primary">
+                            Jadwal Operasional Klinik
+                        </h2>
+                        <p class="text-xs text-text-muted mt-1">
+                            Waktu Indonesia Barat (WIB)
+                        </p>
+                    </div>
 
-                <div class="divide-y divide-gray-100 text-sm">
                     @php
-                        $dayNames = [
-                            1 => 'Senin',
-                            2 => 'Selasa',
-                            3 => 'Rabu',
-                            4 => 'Kamis',
-                            5 => 'Jumat',
-                            6 => 'Sabtu',
-                            7 => 'Minggu',
-                        ];
+                        $todayStatus = $branch->today_status;
                     @endphp
-                    @foreach($branch->schedules as $sched)
-                        <div class="py-2.5 flex items-center justify-between">
-                            <span class="font-medium text-primary">{{ $dayNames[$sched->day_of_week] ?? 'Hari' }}</span>
-                            @if($sched->is_open)
-                                <span class="text-text-muted font-mono text-xs">
-                                    {{ substr((string)$sched->open_time, 0, 5) }} - {{ substr((string)$sched->close_time, 0, 5) }} WIB
-                                </span>
+                    @if ($todayStatus['is_open_today'])
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold {{ $todayStatus['is_open_now'] ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80' : 'bg-amber-50 text-amber-700 border border-amber-200/80' }}">
+                            <span class="w-2 h-2 rounded-full {{ $todayStatus['is_open_now'] ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500' }}"></span>
+                            <span>{{ $todayStatus['today_label'] }}</span>
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/80">
+                            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                            <span>Tutup Hari Ini</span>
+                        </span>
+                    @endif
+                </div>
+
+                <!-- Ringkasan Cerdas (Smart Grouping) -->
+                <div class="p-4 rounded-2xl bg-surface-soft/80 border border-gray-200/70 space-y-2 text-xs sm:text-sm">
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-text-muted mb-1 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Ringkasan Jam Kerja</span>
+                    </div>
+                    @foreach ($branch->grouped_schedules as $group)
+                        <div class="flex items-center justify-between py-1.5 px-3 rounded-xl bg-white/80 border border-gray-100">
+                            <span class="font-medium text-text">{{ $group['label'] }}</span>
+                            @if ($group['is_open'])
+                                <span class="text-primary font-bold font-mono text-xs sm:text-sm">{{ $group['hours'] }}</span>
                             @else
-                                <span class="text-rose-600 font-semibold text-xs bg-rose-50 px-2 py-0.5 rounded-md">
-                                    Tutup
-                                </span>
+                                <span class="text-rose-600 font-semibold text-xs bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">Tutup</span>
                             @endif
                         </div>
                     @endforeach
+                </div>
+
+                <!-- Rincian Harian Lengkap -->
+                <div class="pt-2">
+                    <div class="text-xs font-bold uppercase tracking-wider text-text-muted mb-3">
+                        Rincian Per Hari:
+                    </div>
+                    <div class="divide-y divide-gray-100 text-sm">
+                        @php
+                            $dayNames = [
+                                1 => 'Senin',
+                                2 => 'Selasa',
+                                3 => 'Rabu',
+                                4 => 'Kamis',
+                                5 => 'Jumat',
+                                6 => 'Sabtu',
+                                7 => 'Minggu',
+                            ];
+                            $todayIso = (int) now('Asia/Jakarta')->dayOfWeekIso;
+                        @endphp
+                        @foreach($branch->schedules->sortBy('day_of_week') as $sched)
+                            @php
+                                $isToday = ((int) $sched->day_of_week === $todayIso);
+                            @endphp
+                            <div class="py-2.5 px-2 flex items-center justify-between rounded-lg {{ $isToday ? 'bg-primary/5 font-semibold' : '' }}">
+                                <span class="flex items-center gap-2 {{ $isToday ? 'text-primary' : 'text-text' }}">
+                                    @if ($isToday)
+                                        <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                                    @endif
+                                    <span>{{ $dayNames[$sched->day_of_week] ?? 'Hari' }}</span>
+                                    @if ($isToday)
+                                        <span class="text-[11px] font-normal text-accent bg-accent/10 px-2 py-0.5 rounded-full">Hari ini</span>
+                                    @endif
+                                </span>
+                                @if($sched->is_open)
+                                    <span class="font-mono text-xs {{ $isToday ? 'text-primary font-bold' : 'text-text-muted' }}">
+                                        {{ substr((string)$sched->open_time, 0, 5) }} – {{ substr((string)$sched->close_time, 0, 5) }} WIB
+                                    </span>
+                                @else
+                                    <span class="text-rose-600 font-semibold text-xs bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">
+                                        Tutup
+                                    </span>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             </div>
 

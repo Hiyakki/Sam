@@ -26,8 +26,8 @@ class ProductCategory extends Model
     {
         static::updating(function (ProductCategory $category) {
             if ($category->isDirty('slug') && $category->getOriginal('slug')) {
-                $oldPath = '/katalog?kategori=' . $category->getOriginal('slug');
-                $newPath = '/katalog?kategori=' . $category->slug;
+                $oldPath = '/katalog?kategori='.$category->getOriginal('slug');
+                $newPath = '/katalog?kategori='.$category->slug;
 
                 if ($oldPath !== $newPath) {
                     Redirect::updateOrCreate(

@@ -78,7 +78,7 @@ class ProductCategoryResource extends Resource
                 ->schema([
                     Forms\Components\TextInput::make('meta_title')
                         ->label('Meta Title')
-                        ->placeholder(fn (Forms\Get $get) => ($get('name') ?: 'Nama Kategori') . ' | Katalog | SAM Orthotic Prosthetic')
+                        ->placeholder(fn (Forms\Get $get) => ($get('name') ?: 'Nama Kategori').' | Katalog | SAM Orthotic Prosthetic')
                         ->maxLength(70)
                         ->live(debounce: 400)
                         ->helperText('Rekomendasi: 50–60 karakter.'),
@@ -95,8 +95,8 @@ class ProductCategoryResource extends Resource
                         ->label('Pratinjau Hasil Pencarian Google')
                         ->view('filament.components.google-preview')
                         ->viewData(fn (Forms\Get $get, ?ProductCategory $record) => [
-                            'title' => $get('meta_title') ?: (($get('name') ?: 'Kategori') . ' | Katalog | SAM Orthotic Prosthetic'),
-                            'url' => url('/katalog?kategori=' . ($get('slug') ?: 'slug-kategori')),
+                            'title' => $get('meta_title') ?: (($get('name') ?: 'Kategori').' | Katalog | SAM Orthotic Prosthetic'),
+                            'url' => url('/katalog?kategori='.($get('slug') ?: 'slug-kategori')),
                             'description' => $get('meta_description') ?: strip_tags((string) $get('intro_text')),
                         ]),
                 ])->collapsible(),

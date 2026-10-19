@@ -32,8 +32,8 @@ class Product extends Model
     {
         static::updating(function (Product $product) {
             if ($product->isDirty('slug') && $product->getOriginal('slug')) {
-                $oldPath = '/katalog/' . $product->getOriginal('slug');
-                $newPath = '/katalog/' . $product->slug;
+                $oldPath = '/katalog/'.$product->getOriginal('slug');
+                $newPath = '/katalog/'.$product->slug;
 
                 if ($oldPath !== $newPath) {
                     Redirect::updateOrCreate(

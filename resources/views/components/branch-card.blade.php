@@ -45,21 +45,87 @@
 
                 <!-- Operating Schedules -->
                 @if ($branch->schedules && $branch->schedules->isNotEmpty())
-                    <div class="bg-surface-soft/70 rounded-2xl p-5 mb-6 border border-gray-200/60">
-                        <div class="text-xs font-bold uppercase tracking-wider text-primary mb-3 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span>Jadwal Operasional</span>
+                    <div x-data="{ showDailyDetails: false }" class="bg-surface-soft/80 rounded-2xl p-4 sm:p-5 mb-6 border border-gray-200/80">
+                        <div class="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-gray-200/60">
+                            <div class="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>Jadwal Operasional</span>
+                            </div>
+
+                            @php
+                                $todayStatus = $branch->today_status;
+                            @endphp
+                            @if ($todayStatus['is_open_today'])
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold {{ $todayStatus['is_open_now'] ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80' : 'bg-amber-50 text-amber-700 border border-amber-200/80' }}">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $todayStatus['is_open_now'] ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500' }}"></span>
+                                    <span>{{ $todayStatus['today_label'] }}</span>
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200/80">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                    <span>Tutup Hari Ini</span>
+                                </span>
+                            @endif
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                            @foreach ($branch->schedules as $sched)
-                                <div class="flex items-center justify-between py-1 border-b border-gray-200/40 last:border-0">
-                                    <span class="font-medium text-text">{{ $days[$sched->day_of_week] ?? 'Hari ' . $sched->day_of_week }}</span>
-                                    @if ($sched->is_open)
-                                        <span class="text-primary font-semibold">{{ substr((string) $sched->open_time, 0, 5) }} - {{ substr((string) $sched->close_time, 0, 5) }} WIB</span>
+
+                        <!-- Ringkasan Rapi (Smart Grouping) -->
+                        <div class="space-y-1.5 text-xs">
+                            @foreach ($branch->grouped_schedules as $group)
+                                <div class="flex items-center justify-between py-1.5 px-3 rounded-xl bg-white/70 border border-gray-100">
+                                    <span class="font-medium text-text">{{ $group['label'] }}</span>
+                                    @if ($group['is_open'])
+                                        <span class="text-primary font-semibold tracking-tight">{{ $group['hours'] }}</span>
                                     @else
-                                        <span class="text-red-500 font-medium">Tutup</span>
+                                        <span class="text-rose-600 font-semibold text-[11px] bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">Tutup</span>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Tombol Toggle Dropdown Rincian Harian -->
+                        <div class="mt-3 pt-2 border-t border-gray-200/50 flex items-center justify-between text-[11px]">
+                            <button type="button"
+                                    @click="showDailyDetails = !showDailyDetails"
+                                    class="inline-flex items-center gap-1.5 font-medium text-text-muted hover:text-primary transition-colors focus:outline-hidden cursor-pointer">
+                                <span x-text="showDailyDetails ? 'Sembunyikan rincian harian' : 'Lihat rincian per hari'"></span>
+                                <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': showDailyDetails }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+
+                            <span class="text-text-muted/70 text-[10px] hidden sm:inline">Waktu Indonesia Barat (WIB)</span>
+                        </div>
+
+                        <!-- Rincian Lengkap 7 Hari (Expandable) -->
+                        <div x-show="showDailyDetails"
+                             x-collapse
+                             x-cloak
+                             class="mt-3 pt-2 border-t border-gray-200/50 space-y-1 text-xs">
+                            @php
+                                $todayIso = (int) now('Asia/Jakarta')->dayOfWeekIso;
+                            @endphp
+                            @foreach ($branch->schedules->sortBy('day_of_week') as $sched)
+                                @php
+                                    $isToday = ((int) $sched->day_of_week === $todayIso);
+                                @endphp
+                                <div class="flex items-center justify-between py-1 px-2.5 rounded-lg text-xs {{ $isToday ? 'bg-primary/5 font-semibold text-primary' : 'text-text-muted hover:bg-white/50' }}">
+                                    <span class="flex items-center gap-1.5">
+                                        @if ($isToday)
+                                            <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                                        @endif
+                                        <span>{{ $days[$sched->day_of_week] ?? 'Hari ' . $sched->day_of_week }}</span>
+                                        @if ($isToday)
+                                            <span class="text-[10px] font-normal text-accent">(Hari ini)</span>
+                                        @endif
+                                    </span>
+                                    @if ($sched->is_open)
+                                        <span class="font-mono text-xs {{ $isToday ? 'text-primary font-bold' : 'text-text' }}">
+                                            {{ substr((string) $sched->open_time, 0, 5) }} – {{ substr((string) $sched->close_time, 0, 5) }} WIB
+                                        </span>
+                                    @else
+                                        <span class="text-rose-600 font-medium text-[11px]">Tutup</span>
                                     @endif
                                 </div>
                             @endforeach
@@ -141,20 +207,39 @@
             </p>
 
             @if ($branch->schedules && $branch->schedules->isNotEmpty())
-                <div class="py-3 px-4 rounded-xl bg-surface-soft/80 border border-gray-200/60 mb-6 text-xs text-text-muted space-y-1">
-                    <div class="font-bold text-primary flex items-center gap-1.5 mb-1">
-                        <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span>Jam Buka</span>
+                <div class="py-3 px-4 rounded-xl bg-surface-soft/80 border border-gray-200/60 mb-6 text-xs text-text-muted space-y-2">
+                    <div class="flex items-center justify-between gap-1.5 pb-1 border-b border-gray-200/40">
+                        <div class="font-bold text-primary flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>Jam Operasional</span>
+                        </div>
+                        @php
+                            $todayStatus = $branch->today_status;
+                        @endphp
+                        @if ($todayStatus['is_open_today'])
+                            <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                                {{ $todayStatus['is_open_now'] ? 'Buka Sekarang' : 'Buka Hari Ini' }}
+                            </span>
+                        @else
+                            <span class="text-[10px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200/60">
+                                Tutup Hari Ini
+                            </span>
+                        @endif
                     </div>
-                    @php
-                        $openSchedules = $branch->schedules->where('is_open', true);
-                        $firstOpen = $openSchedules->first();
-                    @endphp
-                    @if ($firstOpen)
-                        <p class="text-xs">Senin - Sabtu: {{ substr((string) $firstOpen->open_time, 0, 5) }} - {{ substr((string) $firstOpen->close_time, 0, 5) }} WIB</p>
-                    @endif
+                    <div class="space-y-1">
+                        @foreach ($branch->grouped_schedules as $group)
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-text-muted">{{ $group['label'] }}</span>
+                                @if ($group['is_open'])
+                                    <span class="font-semibold text-primary">{{ $group['hours'] }}</span>
+                                @else
+                                    <span class="font-semibold text-rose-600 text-[11px]">Tutup</span>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             @endif
         </div>

@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 class AppointmentResource extends Resource
@@ -65,73 +66,12 @@ class AppointmentResource extends Resource
         return 'warning';
     }
 
+    /**
+     * Data pasien tidak dapat diubah oleh admin, sehingga tidak ada form edit.
+     */
     public static function form(Form $form): Form
     {
-        return $form->schema([
-            Forms\Components\Section::make('Tindak Lanjut Admin')->schema([
-                Forms\Components\Select::make('status')
-                    ->label('Status')
-                    ->options(self::STATUSES)
-                    ->required()
-                    ->live(),
-
-                Forms\Components\Select::make('cancelled_by')
-                    ->label('Dibatalkan oleh')
-                    ->options(['patient' => 'Pasien', 'admin' => 'Admin'])
-                    ->visible(fn (Forms\Get $get) => $get('status') === 'cancelled')
-                    ->required(fn (Forms\Get $get) => $get('status') === 'cancelled'),
-
-                Forms\Components\Textarea::make('admin_notes')
-                    ->label('Catatan Admin')
-                    ->rows(4)
-                    ->maxLength(2000)
-                    ->helperText('Hanya terlihat oleh admin.'),
-            ]),
-
-            Forms\Components\Section::make('Detail Kunjungan (Jadwal & Lokasi)')->schema([
-                Forms\Components\Select::make('branch_id')
-                    ->relationship('branch', 'name')
-                    ->label('Kantor Cabang')
-                    ->required(),
-                Forms\Components\Select::make('service_id')
-                    ->relationship('service', 'name')
-                    ->label('Layanan')
-                    ->required(),
-                Forms\Components\DatePicker::make('appointment_date')
-                    ->label('Tanggal Kunjungan')
-                    ->required(),
-                Forms\Components\TimePicker::make('start_time')
-                    ->label('Waktu Mulai')
-                    ->required(),
-                Forms\Components\TimePicker::make('end_time')
-                    ->label('Waktu Selesai')
-                    ->required(),
-            ])->columns(2),
-
-            Forms\Components\Section::make('Data Pasien')->schema([
-                Forms\Components\TextInput::make('patient_name')
-                    ->label('Nama Pasien')
-                    ->required()
-                    ->maxLength(120),
-                Forms\Components\TextInput::make('patient_age')
-                    ->label('Usia')
-                    ->numeric()
-                    ->required(),
-                Forms\Components\TextInput::make('patient_phone')
-                    ->label('Telepon / WA')
-                    ->required()
-                    ->maxLength(20),
-                Forms\Components\TextInput::make('patient_email')
-                    ->label('Email')
-                    ->email()
-                    ->required()
-                    ->maxLength(150),
-                Forms\Components\Textarea::make('complaint')
-                    ->label('Keluhan')
-                    ->required()
-                    ->columnSpanFull(),
-            ])->columns(2),
-        ]);
+        return $form->schema([]);
     }
 
     public static function infolist(Infolist $infolist): Infolist
@@ -192,7 +132,11 @@ class AppointmentResource extends Resource
                 Tables\Columns\TextColumn::make('patient_name')
                     ->label('Pasien')
                     ->description(fn (Appointment $record) => $record->patient_phone)
-                    ->searchable(['patient_name', 'patient_phone', 'patient_email']),
+                    ->color('primary')
+                    ->weight('medium')
+                    ->tooltip('Klik untuk melihat detail, Chat WA, atau Ganti Jadwal')
+                    ->searchable(['patient_name', 'patient_phone', 'patient_email'])
+                    ->action(self::patientDetailAction()),
                 Tables\Columns\TextColumn::make('branch.name')
                     ->label('Kantor')
                     ->toggleable(),
@@ -201,15 +145,20 @@ class AppointmentResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
+                    ->icon('heroicon-m-chevron-down')
+                    ->iconPosition('after')
+                    ->tooltip('Klik untuk ubah status')
                     ->formatStateUsing(fn (string $state) => self::STATUSES[$state] ?? $state)
-                    ->color(fn (string $state) => self::STATUS_COLORS[$state] ?? 'gray'),
+                    ->color(fn (string $state) => self::STATUS_COLORS[$state] ?? 'gray')
+                    ->action(self::changeStatusAction()),
                 Tables\Columns\IconColumn::make('prescription_path')
                     ->label('Resep')
                     ->boolean()
                     ->getStateUsing(fn (Appointment $record) => filled($record->prescription_path))
                     ->toggleable(),
             ])
-            ->defaultSort(fn (Builder $query) => $query->orderBy('appointment_date')->orderBy('start_time'))
+            ->defaultSort(fn (Builder $query) => $query->orderByDesc('appointment_date')->orderByDesc('start_time'))
+            ->recordUrl(null)
             ->filters([
                 Tables\Filters\SelectFilter::make('branch_id')
                     ->label('Kantor')
@@ -231,21 +180,123 @@ class AppointmentResource extends Resource
                         ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('appointment_date', '<=', $d))),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make()->label('Lihat Detail'),
-                    Tables\Actions\EditAction::make()->label('Tindak Lanjut'),
-                    self::statusAction('confirm', 'Konfirmasi', 'confirmed', 'heroicon-m-check-circle', 'success', ['pending']),
-                    self::rescheduleAction(),
-                    self::statusAction('complete', 'Selesai', 'completed', 'heroicon-m-check-badge', 'primary', ['confirmed']),
-                    self::statusAction('no_show', 'Tidak Hadir', 'no_show', 'heroicon-m-user-minus', 'gray', ['confirmed']),
-                    self::cancelAction(),
-                    self::whatsAppAction(),
-                    self::prescriptionAction(),
-                ])
-                    ->label('Aksi')
-                    ->icon('heroicon-m-ellipsis-vertical')
-                    ->tooltip('Menu Aksi'),
+                self::whatsAppAction(),
+                self::rescheduleAction(),
+                self::prescriptionAction(),
+                self::deleteAction(),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make()
+                    ->label('Hapus data terpilih')
+                    ->modalHeading('Hapus data pasien terpilih?')
+                    ->modalDescription('Data yang dihapus tidak akan tampil lagi di Janji Temu maupun di hasil ekspor Excel.'),
             ]);
+    }
+
+    /**
+     * Modal detail pasien (hanya baca) yang dibuka dengan mengklik nama pasien.
+     * Dari sini admin dapat langsung Chat WA atau Ganti Jadwal.
+     */
+    public static function patientDetailAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('patientDetail')
+            ->modalHeading(fn (Appointment $record) => $record->patient_name)
+            ->modalDescription(fn (Appointment $record) => ($record->branch?->name ?? '-').' · '
+                .($record->appointment_date?->translatedFormat('l, d F Y') ?? '-').' · '
+                .substr((string) $record->start_time, 0, 5).' WIB')
+            ->modalWidth('2xl')
+            ->infolist([
+                Infolists\Components\Grid::make(2)->schema([
+                    Infolists\Components\TextEntry::make('status')
+                        ->label('Status')
+                        ->badge()
+                        ->formatStateUsing(fn (string $state) => self::STATUSES[$state] ?? $state)
+                        ->color(fn (string $state) => self::STATUS_COLORS[$state] ?? 'gray'),
+                    Infolists\Components\TextEntry::make('service.name')->label('Layanan'),
+                    Infolists\Components\TextEntry::make('patient_phone')->label('Telepon/WA'),
+                    Infolists\Components\TextEntry::make('patient_email')->label('Email'),
+                    Infolists\Components\TextEntry::make('patient_age')->label('Usia')->suffix(' tahun'),
+                    Infolists\Components\TextEntry::make('created_at')->label('Mendaftar')->dateTime('d M Y H:i'),
+                    Infolists\Components\TextEntry::make('complaint')->label('Keluhan')->columnSpanFull(),
+                    Infolists\Components\TextEntry::make('admin_notes')
+                        ->label('Riwayat Catatan')
+                        ->placeholder('-')
+                        ->columnSpanFull(),
+                ]),
+            ])
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Tutup')
+            ->extraModalFooterActions([
+                self::whatsAppAction(),
+                self::rescheduleAction(),
+            ]);
+    }
+
+    /**
+     * Ubah status cepat dengan mengklik badge status di tabel.
+     */
+    public static function changeStatusAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('changeStatus')
+            ->modalHeading(fn (Appointment $record) => "Ubah Status: {$record->patient_name}")
+            ->modalWidth('md')
+            ->modalSubmitActionLabel('Simpan Status')
+            ->fillForm(fn (Appointment $record) => ['status' => $record->status])
+            ->form([
+                Forms\Components\ToggleButtons::make('status')
+                    ->label('Status baru')
+                    ->options(self::STATUSES)
+                    ->colors(self::STATUS_COLORS)
+                    ->required()
+                    ->live(),
+                Forms\Components\Textarea::make('cancellation_reason')
+                    ->label('Alasan Pembatalan (Opsional)')
+                    ->rows(2)
+                    ->maxLength(500)
+                    ->visible(fn (Forms\Get $get) => $get('status') === 'cancelled'),
+            ])
+            ->action(function (Appointment $record, array $data): void {
+                $newStatus = $data['status'];
+
+                if ($newStatus === $record->status) {
+                    Notification::make()->title('Status tidak berubah')->info()->send();
+
+                    return;
+                }
+
+                $attributes = [
+                    'status' => $newStatus,
+                    'cancelled_by' => $newStatus === 'cancelled' ? 'admin' : null,
+                ];
+
+                if ($newStatus === 'cancelled') {
+                    $reason = trim($data['cancellation_reason'] ?? '');
+                    $timestamp = now('Asia/Jakarta')->format('d/m/Y H:i');
+                    $logText = "[{$timestamp}] Dibatalkan oleh Admin".($reason !== '' ? ": {$reason}" : '.');
+                    $attributes['admin_notes'] = trim($record->admin_notes ? $record->admin_notes."\n".$logText : $logText);
+                }
+
+                $record->update($attributes);
+
+                Notification::make()
+                    ->title('Status diubah: '.self::STATUSES[$newStatus])
+                    ->body('Email pemberitahuan otomatis dikirim ke pasien.')
+                    ->success()
+                    ->send();
+            });
+    }
+
+    /**
+     * Hapus data pasien (soft delete): tidak tampil lagi di tabel maupun ekspor.
+     */
+    public static function deleteAction(): Tables\Actions\DeleteAction
+    {
+        return Tables\Actions\DeleteAction::make()
+            ->label('Hapus')
+            ->modalHeading(fn (Appointment $record) => "Hapus data pasien {$record->patient_name}?")
+            ->modalDescription('Data ini tidak akan tampil lagi di Janji Temu maupun di hasil ekspor Excel.')
+            ->modalSubmitActionLabel('Ya, Hapus')
+            ->successNotificationTitle('Data pasien dihapus');
     }
 
     /**
@@ -254,7 +305,7 @@ class AppointmentResource extends Resource
     public static function rescheduleAction(): Tables\Actions\Action
     {
         return Tables\Actions\Action::make('reschedule')
-            ->label('Ubah Jadwal')
+            ->label('Ganti Jadwal')
             ->icon('heroicon-m-calendar-days')
             ->color('warning')
             ->visible(fn (Appointment $record) => in_array($record->status, ['pending', 'confirmed'], true))
@@ -405,63 +456,12 @@ class AppointmentResource extends Resource
     }
 
     /**
-     * Aksi pembatalan janji temu oleh admin dengan alasan opsional dan pembebasan slot otomatis.
-     */
-    public static function cancelAction(): Tables\Actions\Action
-    {
-        return Tables\Actions\Action::make('cancel')
-            ->label('Batalkan')
-            ->icon('heroicon-m-x-circle')
-            ->color('danger')
-            ->visible(fn (Appointment $record) => in_array($record->status, ['pending', 'confirmed'], true))
-            ->requiresConfirmation()
-            ->modalHeading(fn (Appointment $record) => "Batalkan Janji Temu: {$record->patient_name}")
-            ->modalDescription('Slot akan otomatis dibebaskan dan email pembatalan dikirim ke pasien.')
-            ->form([
-                Forms\Components\Textarea::make('cancellation_reason')
-                    ->label('Alasan Pembatalan (Opsional)')
-                    ->rows(3)
-                    ->maxLength(500)
-                    ->placeholder('Contoh: Pasien berhalangan / Dokter berhalangan hadir'),
-            ])
-            ->modalSubmitActionLabel('Ya, Batalkan Janji')
-            ->action(function (Appointment $record, array $data) {
-                $reason = trim($data['cancellation_reason'] ?? '');
-                $timestamp = now('Asia/Jakarta')->format('d/m/Y H:i');
-                $logText = "[{$timestamp}] Dibatalkan oleh Admin".($reason !== '' ? ": {$reason}" : '.');
-                $updatedNotes = trim($record->admin_notes ? $record->admin_notes."\n".$logText : $logText);
-
-                $record->update([
-                    'status' => 'cancelled',
-                    'cancelled_by' => 'admin',
-                    'admin_notes' => $updatedNotes,
-                ]);
-
-                $branchName = $record->branch?->name ?? 'SAM Orthotic Prosthetic';
-                $waMessage = "Halo {$record->patient_name}, janji temu Anda di {$branchName} telah dibatalkan oleh pihak admin.".($reason !== '' ? " Alasan: {$reason}." : '').' Silakan hubungi kami kembali jika ingin membuat janji temu baru. Terima kasih.';
-                $waUrl = 'https://wa.me/'.$record->patient_phone.'?text='.rawurlencode($waMessage);
-
-                Notification::make()
-                    ->title('Janji Temu Dibatalkan')
-                    ->body('Slot janji temu telah otomatis dikosongkan. Email pembatalan telah dikirim ke pasien.')
-                    ->warning()
-                    ->actions([
-                        NotificationAction::make('send_wa_cancel')
-                            ->label('Kirim WA Pembatalan')
-                            ->url($waUrl)
-                            ->openUrlInNewTab(),
-                    ])
-                    ->send();
-            });
-    }
-
-    /**
      * Aksi kirim WhatsApp dengan pilihan template dinamis.
      */
     public static function whatsAppAction(): Tables\Actions\Action
     {
         return Tables\Actions\Action::make('whatsapp')
-            ->label('Chat WhatsApp')
+            ->label('Chat WA')
             ->icon('heroicon-m-chat-bubble-left-right')
             ->color('success')
             ->form([
@@ -473,7 +473,7 @@ class AppointmentResource extends Resource
                         'reschedule' => 'Template Penyesuaian Jadwal',
                         'cancel' => 'Template Pembatalan',
                     ])
-                    ->default('confirm')
+                    ->default(fn (Appointment $record) => self::defaultTemplateFor($record))
                     ->reactive()
                     ->afterStateUpdated(function ($state, Forms\Set $set, Appointment $record) {
                         $set('message', self::generateTemplateMessage($record, $state));
@@ -482,7 +482,7 @@ class AppointmentResource extends Resource
                     ->label('Isi Pesan WhatsApp (Dapat Diedit)')
                     ->rows(5)
                     ->required()
-                    ->default(fn (Appointment $record) => self::generateTemplateMessage($record, 'confirm')),
+                    ->default(fn (Appointment $record) => self::generateTemplateMessage($record, self::defaultTemplateFor($record))),
             ])
             ->modalHeading(fn (Appointment $record) => "Kirim WhatsApp ke {$record->patient_name}")
             ->modalSubmitActionLabel('Buka WhatsApp')
@@ -500,7 +500,7 @@ class AppointmentResource extends Resource
     public static function prescriptionAction(): Tables\Actions\Action
     {
         return Tables\Actions\Action::make('prescription')
-            ->label('Unduh Resep Dokter')
+            ->label('Resep')
             ->icon('heroicon-m-document-arrow-down')
             ->visible(fn (Appointment $record) => filled($record->prescription_path))
             ->url(fn (Appointment $record) => route('filament.kelola-sam.prescription.download', $record))
@@ -508,25 +508,15 @@ class AppointmentResource extends Resource
     }
 
     /**
-     * Aksi cepat ubah status dari tabel.
+     * Template WA bawaan sesuai status janji saat ini.
      */
-    protected static function statusAction(string $name, string $label, string $status, string $icon, string $color, array $allowedFrom): Tables\Actions\Action
+    public static function defaultTemplateFor(Appointment $record): string
     {
-        return Tables\Actions\Action::make($name)
-            ->label($label)
-            ->icon($icon)
-            ->color($color)
-            ->requiresConfirmation()
-            ->modalHeading("{$label} janji ini?")
-            ->visible(fn (Appointment $record) => in_array($record->status, $allowedFrom, true))
-            ->action(function (Appointment $record) use ($status, $label) {
-                $record->update([
-                    'status' => $status,
-                    'cancelled_by' => $status === 'cancelled' ? 'admin' : $record->cancelled_by,
-                ]);
-
-                Notification::make()->title("Status diubah: {$label}")->success()->send();
-            });
+        return match ($record->status) {
+            'confirmed' => 'reminder',
+            'cancelled', 'no_show' => 'cancel',
+            default => 'confirm',
+        };
     }
 
     /**
@@ -562,6 +552,14 @@ class AppointmentResource extends Resource
         return false;
     }
 
+    /**
+     * Data pasien bersifat tetap; admin hanya mengubah status & jadwal lewat aksi tabel.
+     */
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
     public static function getGloballySearchableAttributes(): array
     {
         return ['patient_name', 'patient_phone', 'patient_email'];
@@ -572,7 +570,6 @@ class AppointmentResource extends Resource
         return [
             'index' => Pages\ListAppointments::route('/'),
             'view' => Pages\ViewAppointment::route('/{record}'),
-            'edit' => Pages\EditAppointment::route('/{record}/edit'),
         ];
     }
 }

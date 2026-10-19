@@ -143,6 +143,28 @@ class SiteSettingSeeder extends Seeder
                 'type' => 'text',
                 'group' => 'general',
             ],
+            [
+                'key' => 'general.gallery',
+                'value' => json_encode([
+                    [
+                        'image' => 'gallery/hero-clinic.webp',
+                        'title' => 'Fasilitas Workshop Mandiri',
+                        'alt' => 'Ruang Workshop & Klinik SAM Orthotic Prosthetic',
+                    ],
+                    [
+                        'image' => 'gallery/consultation.webp',
+                        'title' => 'Pemeriksaan & Konsultasi',
+                        'alt' => 'Sesi Konsultasi Kebutuhan Alat Gerak Pasien',
+                    ],
+                    [
+                        'image' => 'gallery/fitting.webp',
+                        'title' => 'Fitting & Evaluasi Gerak',
+                        'alt' => 'Sesi Fitting dan Penyesuaian Alat Pasien',
+                    ],
+                ]),
+                'type' => 'json',
+                'group' => 'general',
+            ],
 
             // === SEO ===
             [

@@ -20,7 +20,6 @@ class ViewAppointment extends ViewRecord
                 ->color('success')
                 ->url(fn (Appointment $record) => AppointmentResource::whatsAppUrl($record))
                 ->openUrlInNewTab(),
-            Actions\EditAction::make()->label('Tindak lanjut'),
         ];
     }
 }
